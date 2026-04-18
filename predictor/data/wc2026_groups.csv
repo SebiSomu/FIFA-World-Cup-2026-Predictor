@@ -1,0 +1,49 @@
+team,groups,First match against,Second match against,Third match against
+Mexico,A,South Africa,Korea Republic,Czechia
+South Africa,A,Mexico,Czechia,Korea Republic
+Korea Republic,A,Czechia,Mexico,South Africa
+Czechia,A,Korea Republic,South Africa,Mexico
+Canada,B,Bosnia and Herzegovina,Qatar,Switzerland
+Bosnia and Herzegovina,B,Canada,Switzerland,Qatar
+Qatar,B,Switzerland,Canada,Bosnia and Herzegovina
+Switzerland,B,Qatar,Bosnia and Herzegovina,Canada
+Brazil,C,Morocco,Haiti,Scotland
+Morocco,C,Brazil,Scotland,Haiti
+Haiti,C,Scotland,Brazil,Morocco
+Scotland,C,Haiti,Morocco,Brazil
+United States,D,Paraguay,Australia,Türkiye
+Paraguay,D,United States,Türkiye,Australia
+Australia,D,Türkiye,United States,Paraguay
+Türkiye,D,Australia,Paraguay,United States
+Germany,E,Curaçao,Côte d'Ivoire,Ecuador
+Curaçao,E,Germany,Ecuador,Côte d'Ivoire
+Côte d'Ivoire,E,Ecuador,Germany,Curaçao
+Ecuador,E,Côte d'Ivoire,Curaçao,Germany
+Netherlands,F,Japan,Sweden,Tunisia
+Japan,F,Netherlands,Tunisia,Sweden
+Tunisia,F,Sweden,Japan,Netherlands
+Sweden,F,Tunisia,Netherlands,Japan
+Belgium,G,Egypt,Iran,New Zealand
+Egypt,G,Belgium,New Zealand,Iran
+Iran,G,New Zealand,Belgium,Egypt
+New Zealand,G,Iran,Egypt,Belgium
+Spain,H,Cabo Verde,Saudi Arabia,Uruguay
+Cabo Verde,H,Spain,Uruguay,Saudi Arabia
+Saudi Arabia,H,Uruguay,Cabo Verde,Spain
+Uruguay,H,Saudi Arabia,Spain,Cabo Verde
+France,I,Senegal,Iraq,Norway
+Senegal,I,France,Norway,Iraq
+Norway,I,Iraq,Senegal,France
+Iraq,I,Norway,France,Senegal
+Argentina,J,Algeria,Austria,Jordan
+Algeria,J,Argentina,Jordan,Austria
+Austria,J,Jordan,Argentina,Algeria
+Jordan,J,Austria,Algeria,Argentina
+Portugal,K,DR Congo,Uzbekistan,Colombia
+Uzbekistan,K,Colombia,Portugal,DR Congo
+Colombia,K,Uzbekistan,DR Congo,Portugal
+DR Congo,K,Portugal,Colombia,Uzbekistan
+England,L,Croatia,Ghana,Panama
+Croatia,L,England,Panama,Ghana
+Ghana,L,Panama,England,Croatia
+Panama,L,Ghana,Croatia,England
