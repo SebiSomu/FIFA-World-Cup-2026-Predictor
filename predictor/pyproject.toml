@@ -9,5 +9,6 @@ dependencies = [
     "xgboost",
     "matplotlib",
     "seaborn",
-    "scipy"
+    "scipy",
+    "tqdm"
 ]

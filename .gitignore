@@ -34,12 +34,6 @@ env/
 *.swp
 *.swo
 
-# Data & Output
-predictor/data/processed/
-predictor/output/predictions/*.csv
-predictor/output/predictions/*.png
-predictor/output/predictions/*.jpg
-
 # OS
 .DS_Store
 Thumbs.db

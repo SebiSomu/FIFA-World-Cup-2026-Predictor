@@ -34,10 +34,20 @@ class TeamNormalizer:
         """Build mapping dictionary from former names to current names."""
         self.name_mapping: Dict[str, str] = {}
         
+        # Group timed mappings: {former_name: [(start, end, current), ...]}
+        self.timed_mappings: Dict[str, List[Tuple[pd.Timestamp, pd.Timestamp, str]]] = {}
+        
         for _, row in self.former_names.iterrows():
             former = row['former']
             current = row['current']
-            self.name_mapping[former] = current
+            
+            # If no dates, add to static mapping
+            if pd.isna(row['start_date']) or pd.isna(row['end_date']):
+                self.name_mapping[former] = current
+            else:
+                if former not in self.timed_mappings:
+                    self.timed_mappings[former] = []
+                self.timed_mappings[former].append((row['start_date'], row['end_date'], current))
         
         # Add common manual mappings for edge cases
         self._add_manual_mappings()
@@ -74,32 +84,24 @@ class TeamNormalizer:
         for wc_name, hist_name in reverse_mappings.items():
             self.name_mapping[wc_name] = hist_name
     
-    def normalize(self, team_name: str, match_date: Optional[datetime] = None) -> str:
+    def normalize(self, team_name: str, match_date: Optional[pd.Timestamp] = None) -> str:
         """
         Normalize a team name to its current standard name.
-        
-        Args:
-            team_name: The team name to normalize
-            match_date: Optional date of match for time-specific mappings
-            
-        Returns:
-            Normalized team name
         """
         if pd.isna(team_name):
             return team_name
         
         team_name = str(team_name).strip()
         
+        # Check timed mappings first if date is provided
+        if match_date is not None and team_name in self.timed_mappings:
+            for start, end, current in self.timed_mappings[team_name]:
+                if start <= match_date <= end:
+                    return current
+        
         # Check direct mapping
         if team_name in self.name_mapping:
             return self.name_mapping[team_name]
-        
-        # Check for date-specific mapping
-        if match_date is not None:
-            for _, row in self.former_names.iterrows():
-                if row['former'] == team_name:
-                    if row['start_date'] <= match_date <= row['end_date']:
-                        return row['current']
         
         # Return original if no mapping found
         return team_name
@@ -205,7 +207,10 @@ class TeamNormalizer:
 
 if __name__ == '__main__':
     # Test the team normalizer
-    from data_loader import DataLoader
+    try:
+        from .data_loader import DataLoader
+    except ImportError:
+        from data_loader import DataLoader
     
     loader = DataLoader()
     results = loader.load_results()
