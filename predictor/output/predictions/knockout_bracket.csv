@@ -1,0 +1,33 @@
+match_id,stage,group,home_team,away_team,predicted_home_score,predicted_away_score,score_detail,prob_home_win,prob_draw,prob_away_win,winner
+KO001,Round of 32,,Mexico,Korea Republic,2,1,2-1,0.62,0.226,0.154,Mexico
+KO002,Round of 32,,Switzerland,Canada,2,1,2-1,0.614,0.216,0.17,Switzerland
+KO003,Round of 32,,Brazil,Morocco,2,1,2-1,0.749,0.158,0.093,Brazil
+KO004,Round of 32,,Türkiye,Paraguay,2,1,2-1,0.534,0.225,0.241,Türkiye
+KO005,Round of 32,,Ecuador,Germany,2,1,2-1,0.409,0.236,0.355,Ecuador
+KO006,Round of 32,,Netherlands,Japan,2,1,2-1,0.512,0.238,0.25,Netherlands
+KO007,Round of 32,,Belgium,Iran,2,1,2-1,0.605,0.23,0.165,Belgium
+KO008,Round of 32,,Spain,Uruguay,3,0,3-0,0.902,0.087,0.011,Spain
+KO009,Round of 32,,France,Norway,2,1,2-1,0.775,0.149,0.076,France
+KO010,Round of 32,,Argentina,Austria,3,0,3-0,0.928,0.069,0.003,Argentina
+KO011,Round of 32,,Portugal,Colombia,2,1,2-1,0.392,0.217,0.391,Portugal
+KO012,Round of 32,,England,Croatia,2,1,2-1,0.588,0.206,0.206,England
+KO013,Round of 32,,Czechia,Egypt,2,1,2-1,0.454,0.22,0.326,Czechia
+KO014,Round of 32,,Senegal,Australia,2,1,2-1,0.604,0.21,0.186,Senegal
+KO015,Round of 32,,Scotland,Sweden,2,1,2-1,0.49,0.225,0.285,Scotland
+KO016,Round of 32,,Panama,Côte d'Ivoire,2,1,2-1,0.505,0.237,0.258,Panama
+KO017,Round of 16,,Mexico,Switzerland,1,2,1-2,0.301,0.238,0.461,Switzerland
+KO018,Round of 16,,Brazil,Türkiye,2,1,2-1,0.596,0.212,0.192,Brazil
+KO019,Round of 16,,Ecuador,Netherlands,1,2,1-2,0.317,0.238,0.445,Netherlands
+KO020,Round of 16,,Belgium,Spain,0,3,0-3,0.006,0.057,0.937,Spain
+KO021,Round of 16,,France,Argentina,1,2,1-2,0.311,0.235,0.454,Argentina
+KO022,Round of 16,,Portugal,England,1,2,1-2,0.312,0.209,0.479,England
+KO023,Round of 16,,Czechia,Senegal,1,2,1-2,0.095,0.182,0.723,Senegal
+KO024,Round of 16,,Scotland,Panama,2,1,2-1,0.462,0.232,0.306,Scotland
+KO025,Quarter-Final,,Switzerland,Brazil,1,2,1-2,0.189,0.213,0.598,Brazil
+KO026,Quarter-Final,,Netherlands,Spain,0,3,0-3,0.059,0.132,0.809,Spain
+KO027,Quarter-Final,,Argentina,England,2,1,2-1,0.568,0.247,0.185,Argentina
+KO028,Quarter-Final,,Senegal,Scotland,2,1,2-1,0.63,0.203,0.167,Senegal
+KO029,Semi-Final,,Brazil,Spain,1,2,1-2,0.065,0.143,0.792,Spain
+KO030,Semi-Final,,Argentina,Senegal,3,0,3-0,0.855,0.119,0.026,Argentina
+KO031,Third Place,,Brazil,Senegal,2,1,2-1,0.615,0.222,0.163,Brazil
+KO032,Final,,Spain,Argentina,2,1,2-1,0.505,0.223,0.272,Spain

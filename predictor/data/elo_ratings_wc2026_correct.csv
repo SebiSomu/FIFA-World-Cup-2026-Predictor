@@ -1,0 +1,61 @@
+team,elo_rating,confederation
+# Group A
+Mexico,1858,CONCACAF
+South Africa,1524,CAF
+Korea Republic,1752,AFC
+Czechia,1726,UEFA
+# Group B
+Canada,1784,CONCACAF
+Bosnia and Herzegovina,1594,UEFA
+Qatar,1425,AFC
+Switzerland,1889,UEFA
+# Group C
+Brazil,1984,CONMEBOL
+Morocco,1821,CAF
+Haiti,1532,CONCACAF
+Scotland,1767,UEFA
+# Group D
+United States,1721,CONCACAF
+Paraguay,1833,CONMEBOL
+Australia,1783,AFC
+Türkiye,1902,UEFA
+# Group E
+Germany,1923,UEFA
+Curaçao,1436,CONCACAF
+Côte d'Ivoire,1676,CAF
+Ecuador,1933,CONMEBOL
+# Group F
+Netherlands,1961,UEFA
+Japan,1904,AFC
+Sweden,1719,UEFA
+Tunisia,1636,CAF
+# Group G
+Belgium,1866,UEFA
+Egypt,1689,CAF
+Iran,1760,AFC
+New Zealand,1585,OFC
+# Group H
+Spain,2165,UEFA
+Cabo Verde,1549,CAF
+Saudi Arabia,1568,AFC
+Uruguay,1892,CONMEBOL
+# Group I
+France,2082,UEFA
+Senegal,1879,CAF
+Norway,1912,UEFA
+Iraq,1607,AFC
+# Group J
+Argentina,2113,CONMEBOL
+Algeria,1743,CAF
+Austria,1827,UEFA
+Jordan,1690,AFC
+# Group K
+Portugal,1984,UEFA
+DR Congo,1655,CAF
+Uzbekistan,1727,AFC
+Colombia,1975,CONMEBOL
+# Group L
+England,2020,UEFA
+Croatia,1930,UEFA
+Ghana,1505,CAF
+Panama,1737,CONCACAF

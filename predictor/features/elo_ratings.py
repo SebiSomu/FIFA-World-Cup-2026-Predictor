@@ -1,6 +1,66 @@
 import math
 from typing import Dict, Tuple
 
+# Confederation strength multipliers for intra-confederation matches
+# Matches within weaker confederations get lower K-factors to prevent inflation
+CONFEDERATION_K_MULTIPLIERS = {
+    'UEFA': 1.0,        # Strongest - full K-factor
+    'CONMEBOL': 1.0,    # Strongest - full K-factor
+    'CONCACAF': 0.7,    # Medium - reduced K-factor
+    'CAF': 0.6,         # Weaker - more reduced K-factor
+    'AFC': 0.6,         # Weaker - more reduced K-factor
+    'OFC': 0.5,         # Weakest - most reduced K-factor
+}
+
+# Team to confederation mapping (simplified)
+TEAM_CONFEDERATION = {
+    # UEFA (Europe)
+    'Germany': 'UEFA', 'France': 'UEFA', 'Spain': 'UEFA', 'England': 'UEFA',
+    'Portugal': 'UEFA', 'Netherlands': 'UEFA', 'Belgium': 'UEFA', 'Italy': 'UEFA',
+    'Croatia': 'UEFA', 'Switzerland': 'UEFA', 'Austria': 'UEFA', 'Scotland': 'UEFA',
+    'Norway': 'UEFA', 'Sweden': 'UEFA', 'Czechia': 'UEFA', 'Poland': 'UEFA',
+    'Serbia': 'UEFA', 'Bosnia and Herzegovina': 'UEFA',
+    
+    # CONMEBOL (South America)
+    'Argentina': 'CONMEBOL', 'Brazil': 'CONMEBOL', 'Uruguay': 'CONMEBOL',
+    'Colombia': 'CONMEBOL', 'Paraguay': 'CONMEBOL', 'Ecuador': 'CONMEBOL',
+    'Chile': 'CONMEBOL', 'Venezuela': 'CONMEBOL', 'Peru': 'CONMEBOL',
+    'Bolivia': 'CONMEBOL',
+    
+    # CONCACAF
+    'Mexico': 'CONCACAF', 'United States': 'CONCACAF', 'Canada': 'CONCACAF',
+    'Panama': 'CONCACAF', 'Honduras': 'CONCACAF', 'Costa Rica': 'CONCACAF',
+    'Jamaica': 'CONCACAF', 'Haiti': 'CONCACAF', 'Curaçao': 'CONCACAF',
+    'Trinidad & Tobago': 'CONCACAF', 'Guatemala': 'CONCACAF',
+    
+    # CAF (Africa)
+    'Morocco': 'CAF', 'Senegal': 'CAF', 'Tunisia': 'CAF', 'Algeria': 'CAF',
+    'Egypt': 'CAF', 'Ghana': 'CAF', 'Nigeria': 'CAF', 'Cameroon': 'CAF',
+    'DR Congo': 'CAF', 'Congo DR': 'CAF', 'South Africa': 'CAF',
+    'Cabo Verde': 'CAF', 'Cape Verde': 'CAF', "Côte d'Ivoire": 'CAF',
+    'Ivory Coast': 'CAF', 'Mali': 'CAF',
+    
+    # AFC (Asia)
+    'Japan': 'AFC', 'Korea Republic': 'AFC', 'South Korea': 'AFC',
+    'Australia': 'AFC', 'Iran': 'AFC', 'Saudi Arabia': 'AFC', 'Qatar': 'AFC',
+    'Iraq': 'AFC', 'Uzbekistan': 'AFC', 'Jordan': 'AFC',
+    
+    # OFC (Oceania)
+    'New Zealand': 'OFC',
+}
+
+
+def get_confederation(team: str) -> str:
+    """Get confederation for a team (default to AFC for unknown teams)."""
+    # Try exact match first
+    if team in TEAM_CONFEDERATION:
+        return TEAM_CONFEDERATION[team]
+    
+    # Try to infer from team name patterns
+    # This is a simplified heuristic
+    return 'AFC'  # Default to weakest confederation
+
+
 class EloSystem:
     """
     Implements a custom ELO rating system tailored for international football.
@@ -16,13 +76,13 @@ class EloSystem:
         # K-Factors based on tournament importance
         self.k_factors = {
             'FIFA World Cup': 60,
-            'Confederations Cup': 50,
+            'Confederations Cup': 40,
             'UEFA Euro': 50,
             'Copa América': 50,
-            'African Cup of Nations': 50,
-            'AFC Asian Cup': 50,
-            'CONCACAF Championship': 50,
-            'Oceania Nations Cup': 50,
+            'African Cup of Nations': 40,
+            'AFC Asian Cup': 35,
+            'CONCACAF Championship': 35,
+            'Oceania Nations Cup': 30,
             'FIFA World Cup qualification': 40,
             'UEFA Euro qualification': 40,
             'Friendly': 20,
@@ -83,7 +143,23 @@ class EloSystem:
             w_home, w_away = 0.5, 0.5
             
         # K-factor and Multipliers
-        k = self.get_k_factor(tournament)
+        base_k = self.get_k_factor(tournament)
+        
+        # Get confederations for both teams
+        conf_home = get_confederation(home_team)
+        conf_away = get_confederation(away_team)
+        
+        # Adjust K-factor based on match type
+        if conf_home == conf_away:
+            # Intra-confederation match: apply confederation-specific multiplier
+            # This prevents inflation within weak confederations
+            k_multiplier = CONFEDERATION_K_MULTIPLIERS.get(conf_home, 0.6)
+            k = base_k * k_multiplier
+        else:
+            # Inter-confederation match: use base K-factor
+            # These matches are most valuable for true strength assessment
+            k = base_k
+        
         mov = self.get_mov_multiplier(home_score, away_score)
         
         # Clean Sheet bonus: +10% to the rating gain if kept a clean sheet
