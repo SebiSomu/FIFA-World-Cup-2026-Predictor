@@ -15,16 +15,45 @@ from simulation.wc2026_groups import (
     GROUPS, get_all_group_matches, init_group_records,
     rank_group, determine_qualifiers, TeamRecord,
 )
-from models.historical_predictor import HistoricalPredictor
+from simulation.wc2026_knockout_bracket import (
+    FINAL_MATCH,
+    THIRD_PLACE_MATCH,
+    build_final_fixture,
+    build_quarter_final_fixtures,
+    build_round_of_16_fixtures,
+    build_round_of_32_fixtures,
+    build_semi_final_fixtures,
+    build_third_place_fixture,
+)
+from models.dixon_coles_hybrid_predictor import DixonColesHybridPredictor
 from features.elo_ratings import EloSystem
 
 # Initialize ELO system for tournament ELO updates
 TOURNAMENT_ELO = EloSystem()
 
+_SIM_DIR = Path(__file__).resolve().parent
+_PREDICTOR_ROOT = _SIM_DIR.parent
+
+
+def _resolve_results_csv() -> Optional[Path]:
+    """Locate results.csv when cwd is repo root, predictor/, or elsewhere."""
+    candidates = [
+        _PREDICTOR_ROOT / "data" / "results.csv",
+        Path("predictor/data/results.csv"),
+        Path("data/results.csv"),
+    ]
+    for p in candidates:
+        if p.exists():
+            return p.resolve()
+    return None
+
 
 def load_external_elo_ratings() -> Dict[str, float]:
     """Load current ELO ratings from eloratings.net CSV file for WC2026 teams."""
-    elo_file = Path('predictor/data/elo_ratings_wc2026_correct.csv')
+    # Get the directory of this file
+    current_dir = Path(__file__).resolve().parent
+    # Go up one level to predictor/, then to data/
+    elo_file = current_dir.parent / 'data' / 'elo_ratings_wc2026_correct.csv'
     if elo_file.exists():
         # Read CSV, skipping comment lines
         df = pd.read_csv(elo_file, comment='#')
@@ -101,7 +130,7 @@ class TeamState:
 # ── Group Stage ───────────────────────────────────────────────────────────────
 
 def simulate_group_stage(
-    predictor: HistoricalPredictor,
+    predictor: DixonColesHybridPredictor,
     state: TeamState,
 ) -> Tuple[Dict, List[Dict]]:
     """
@@ -152,79 +181,31 @@ def simulate_group_stage(
     return group_standings, match_results
 
 
-# ── Bracket Builder (Round of 32) ─────────────────────────────────────────────
+# ── Knockout Simulation (FIFA bracket match numbers M073 … M104) ─────────────
 
-def build_r32_bracket(
-    qualified_by_group: Dict,
-    best_thirds: List[TeamRecord],
-) -> List[Tuple[str, str]]:
-    """
-    Build the Round of 32 bracket.
-    WC2026 format: 16 matches between group winners/runners-up/best-thirds.
-
-    Simplified pairing: 1st of group X vs 2nd of group Y (FIFA will announce
-    the exact cross-group pairings after the draw; we use a representative schedule).
-    Winners + best thirds fill the 32-team bracket.
-    """
-    # Collect 1st and 2nd place teams
-    firsts  = [qualified_by_group[g][0].team for g in sorted(GROUPS)]
-    seconds = [qualified_by_group[g][1].team for g in sorted(GROUPS)]
-    thirds  = [t.team for t in best_thirds]
-
-    # 32 teams total: 12 firsts + 12 seconds + 8 best thirds
-    # Pair: first[i] vs second[11-i] with thirds filling remaining slots
-    bracket: List[Tuple[str, str]] = []
-
-    # Pair each 1st-place vs a 2nd-place (avoid same group where possible)
-    # Simple sequential pairing as placeholder for official draw
-    all_32 = firsts + thirds  # 12 + 8 = 20 "seeded" side
-    other_16 = seconds        # 12 seconds
-
-    # Fill to 16 matches
-    side_a = firsts[:12] + thirds[:4]   # 16 teams
-    side_b = seconds[:12] + thirds[4:8] # 16 teams
-
-    for a, b in zip(side_a, side_b):
-        bracket.append((a, b))
-
-    return bracket
-
-
-# ── Knockout Simulation ───────────────────────────────────────────────────────
-
-def simulate_knockout_round(
-    predictor: Predictor,
+def simulate_knockout_fixtures(
+    predictor: DixonColesHybridPredictor,
     state: TeamState,
-    matches: List[Tuple[str, str]],
+    fixtures: List[Tuple[str, str, int]],
     stage_name: str,
-    match_id_start: int,
-) -> Tuple[List[str], List[Dict]]:
+) -> Tuple[Dict[int, str], List[Dict]]:
     """
-    Simulate a single knockout round.
-    Returns (winners list, match_results list).
+    Simulate knockout ties with official FIFA match numbers on the bracket path.
+    Returns (winners keyed by fifa_match_number, list of result dicts).
     """
-    winners = []
-    results = []
-    mid = match_id_start
+    winners: Dict[int, str] = {}
+    results: List[Dict] = []
 
-    for home, away in matches:
-        elo_h = state.get_elo(home)
-        elo_a = state.get_elo(away)
-        form_h = state.get_form(home)
-        form_a = state.get_form(away)
-
-        # Use historical predictor for knockout
+    for home, away, mnum in fixtures:
         result = predictor.simulate_knockout(
             home, away,
             neutral=True,
         )
 
         winner = result['winner']
-        winners.append(winner)
-        # Update state (ELO + form)
+        winners[mnum] = winner
         state.update(home, away, result['final_score'][0], result['final_score'][1])
 
-        # Format score string
         h90, a90 = result['score_90']
         score_str = f"{h90}-{a90}"
         if result['score_et']:
@@ -235,7 +216,8 @@ def simulate_knockout_round(
             score_str += f" [PKs: {p_h}-{p_a}]"
 
         results.append({
-            'match_id': f'KO{mid:03d}',
+            'match_id': f'M{mnum:03d}',
+            'fifa_match_number': mnum,
             'stage': stage_name,
             'group': '',
             'home_team': home,
@@ -248,14 +230,8 @@ def simulate_knockout_round(
             'prob_away_win': round(result['prob_away_win'], 3),
             'winner': winner,
         })
-        mid += 1
 
     return winners, results
-
-
-def pair_for_next_round(winners: List[str]) -> List[Tuple[str, str]]:
-    """Pair consecutive winners: [0 vs 1, 2 vs 3, ...]"""
-    return [(winners[i], winners[i+1]) for i in range(0, len(winners), 2)]
 
 
 # ── Full Tournament ───────────────────────────────────────────────────────────
@@ -267,7 +243,17 @@ def run_tournament(base_elo: Dict[str, float] = None) -> Dict:
     """
     np.random.seed(42)  # reproducibility
 
-    predictor = HistoricalPredictor()  # New historical-based predictor
+    predictor = DixonColesHybridPredictor()  # Dixon-Coles hybrid predictor
+    results_path = _resolve_results_csv()
+    if results_path is not None:
+        matches_df = pd.read_csv(results_path)
+        matches_df["date"] = pd.to_datetime(matches_df["date"])
+        # Same year window as hybrid fit (all-time when FIT_MIN_YEAR is early)
+        matches_df = matches_df[
+            matches_df["date"].dt.year >= DixonColesHybridPredictor.FIT_MIN_YEAR
+        ]
+        predictor.fit(matches_df)
+    
     state = TeamState(base_elo)  # Uses external eloratings.net by default
 
     all_results: List[Dict] = []
@@ -281,53 +267,52 @@ def run_tournament(base_elo: Dict[str, float] = None) -> Dict:
     qualified_by_group, best_thirds = determine_qualifiers(group_standings)
     print(f"  -> 24 group winners/runners-up + 8 best 3rd-place teams qualify")
 
-    # ── Round of 32 ──
-    r32_bracket = build_r32_bracket(qualified_by_group, best_thirds)
-    print(f"\nSimulating Round of 32 ({len(r32_bracket)} matches)...")
-    r32_winners, r32_results = simulate_knockout_round(
-        predictor, state, r32_bracket, 'Round of 32', 1)
+    # ── Round of 32 (FIFA matches 73–88) ──
+    r32_fixtures = build_round_of_32_fixtures(qualified_by_group, best_thirds)
+    print(f"\nSimulating Round of 32 ({len(r32_fixtures)} matches, FIFA M073–M088)...")
+    r32_winners, r32_results = simulate_knockout_fixtures(
+        predictor, state, r32_fixtures, 'Round of 32')
     all_results.extend(r32_results)
 
-    # ── Round of 16 ──
-    r16_bracket = pair_for_next_round(r32_winners)
-    print(f"Simulating Round of 16 ({len(r16_bracket)} matches)...")
-    r16_winners, r16_results = simulate_knockout_round(
-        predictor, state, r16_bracket, 'Round of 16', 17)
+    # ── Round of 16 (89–96) ──
+    r16_fixtures = build_round_of_16_fixtures(r32_winners)
+    print(f"Simulating Round of 16 ({len(r16_fixtures)} matches, FIFA M089–M096)...")
+    r16_winners, r16_results = simulate_knockout_fixtures(
+        predictor, state, r16_fixtures, 'Round of 16')
     all_results.extend(r16_results)
 
-    # ── Quarter-finals ──
-    qf_bracket = pair_for_next_round(r16_winners)
-    print(f"Simulating Quarter-Finals ({len(qf_bracket)} matches)...")
-    qf_winners, qf_results = simulate_knockout_round(
-        predictor, state, qf_bracket, 'Quarter-Final', 25)
+    # ── Quarter-finals (97–100) ──
+    qf_fixtures = build_quarter_final_fixtures(r16_winners)
+    print(f"Simulating Quarter-Finals ({len(qf_fixtures)} matches, FIFA M097–M100)...")
+    qf_winners, qf_results = simulate_knockout_fixtures(
+        predictor, state, qf_fixtures, 'Quarter-Final')
     all_results.extend(qf_results)
 
-    # ── Semi-finals ──
-    sf_bracket = pair_for_next_round(qf_winners)
-    print(f"Simulating Semi-Finals ({len(sf_bracket)} matches)...")
-    sf_winners, sf_results = simulate_knockout_round(
-        predictor, state, sf_bracket, 'Semi-Final', 29)
-    sf_losers = [
-        sf_results[0]['home_team'] if sf_results[0]['winner'] == sf_results[0]['away_team'] else sf_results[0]['away_team'],
-        sf_results[1]['home_team'] if sf_results[1]['winner'] == sf_results[1]['away_team'] else sf_results[1]['away_team'],
-    ]
+    # ── Semi-finals (101–102) ──
+    sf_fixtures = build_semi_final_fixtures(qf_winners)
+    print(f"Simulating Semi-Finals ({len(sf_fixtures)} matches, FIFA M101–M102)...")
+    sf_winners, sf_results = simulate_knockout_fixtures(
+        predictor, state, sf_fixtures, 'Semi-Final')
     all_results.extend(sf_results)
+    sf_by_num = {r['fifa_match_number']: r for r in sf_results}
 
-    # ── Third place ──
-    print("Simulating Third Place Playoff...")
-    tp_winners, tp_results = simulate_knockout_round(
-        predictor, state, [(sf_losers[0], sf_losers[1])], 'Third Place', 31)
+    # ── Third place (103) ──
+    print("Simulating Third Place Playoff (FIFA M103)...")
+    tp_fixtures = build_third_place_fixture(sf_by_num)
+    tp_winners, tp_results = simulate_knockout_fixtures(
+        predictor, state, tp_fixtures, 'Third Place')
     all_results.extend(tp_results)
-    third_place = tp_winners[0]
+    third_place = tp_winners[THIRD_PLACE_MATCH]
 
-    # ── Final ──
-    print("Simulating Final...")
-    final_bracket = [(sf_winners[0], sf_winners[1])]
-    final_winners, final_results = simulate_knockout_round(
-        predictor, state, final_bracket, 'Final', 32)
+    # ── Final (104) ──
+    print("Simulating Final (FIFA M104)...")
+    final_fixtures = build_final_fixture(sf_by_num)
+    final_winners, final_results = simulate_knockout_fixtures(
+        predictor, state, final_fixtures, 'Final')
     all_results.extend(final_results)
-    champion = final_winners[0]
-    runner_up = sf_winners[1] if champion == sf_winners[0] else sf_winners[0]
+    champion = final_winners[FINAL_MATCH]
+    fr = final_results[0]
+    runner_up = fr['away_team'] if fr['winner'] == fr['home_team'] else fr['home_team']
 
     return {
         'all_results': all_results,

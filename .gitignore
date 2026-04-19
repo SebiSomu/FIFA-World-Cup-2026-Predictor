@@ -37,3 +37,16 @@ env/
 # OS
 .DS_Store
 Thumbs.db
+
+# Project outputs
+predictor/output/
+*.csv
+*.png
+*.jpg
+*.json
+simulation_output.txt
+
+# Model files
+*.pkl
+*.joblib
+*.model

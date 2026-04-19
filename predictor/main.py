@@ -68,35 +68,9 @@ def step_output(tournament_results: dict):
     print("\n" + "=" * 60)
     print("STEP 4: GENERATING OUTPUT")
     print("=" * 60)
-    OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
+    from simulation.output_writer import save_tournament_outputs
 
-    # ── All match predictions CSV ──
-    all_results = tournament_results['all_results']
-    df_matches = pd.DataFrame(all_results)
-    matches_path = OUTPUT_DIR / 'wc2026_predictions.csv'
-    df_matches.to_csv(matches_path, index=False)
-    print(f"  📄 Match predictions → {matches_path} ({len(df_matches)} matches)")
-
-    # ── Group standings CSV ──
-    standings_rows = []
-    for group, ranked in tournament_results['group_standings'].items():
-        for pos, record in enumerate(ranked, 1):
-            row = record.as_dict()
-            row['position'] = pos
-            standings_rows.append(row)
-    df_standings = pd.DataFrame(standings_rows)
-    standings_path = OUTPUT_DIR / 'group_standings.csv'
-    df_standings.to_csv(standings_path, index=False)
-    print(f"  📄 Group standings → {standings_path}")
-
-    # ── Knockout bracket CSV ──
-    ko_results = [r for r in all_results if r['stage'] != 'Group Stage']
-    df_ko = pd.DataFrame(ko_results)
-    ko_path = OUTPUT_DIR / 'knockout_bracket.csv'
-    df_ko.to_csv(ko_path, index=False)
-    print(f"  📄 Knockout bracket → {ko_path}")
-
-    return df_matches, df_standings
+    return save_tournament_outputs(tournament_results, OUTPUT_DIR, verbose=True)
 
 
 def print_summary(tournament_results: dict, df_standings: pd.DataFrame):

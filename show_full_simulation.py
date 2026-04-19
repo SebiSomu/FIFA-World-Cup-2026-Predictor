@@ -1,9 +1,15 @@
 import sys
-sys.path.append('predictor')
+from pathlib import Path
+
+_REPO_ROOT = Path(__file__).resolve().parent
+sys.path.insert(0, str(_REPO_ROOT / "predictor"))
+
+from simulation.output_writer import save_tournament_outputs
 from simulation.tournament import run_tournament
 
 # Run simulation
 results = run_tournament()
+save_tournament_outputs(results, verbose=False)
 
 # Show group standings
 print("\n" + "="*60)
