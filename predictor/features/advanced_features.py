@@ -13,43 +13,160 @@ import sys
 sys.path.append(str(Path(__file__).resolve().parent.parent))
 
 
-# Recency: last RECENCY_WINDOW_YEARS calendar years get RECENCY_WEIGHT_RECENT (rest = 1.0)
+# Recency weighting parameters
 RECENCY_WINDOW_YEARS = 4
-RECENCY_WEIGHT_RECENT = 1.5
+RECENCY_WEIGHT_RECENT = 2.0  # Double weight for recent matches (2022+)
 RECENCY_WEIGHT_BASE = 1.0
 
-# Competition importance weights
+# Option 2: Exponential decay (new system, recommended)
+# λ = 0.25 means: 2026=1.0, 2024=0.61, 2022=0.37, 2020=0.22, 2018=0.14
+RECENCY_LAMBDA = 0.25  # Decay parameter - slower decay for better balance
+
+# Hybrid weighting: balance competition importance vs recency
+# total_weight = (comp_weight * COMPETITION_WEIGHT_RATIO) + (recency_weight * RECENCY_WEIGHT_RATIO)
+COMPETITION_WEIGHT_RATIO = 0.60  # 60% competition importance
+RECENCY_WEIGHT_RATIO = 0.40     # 40% recency
+
+# Cap total_weight to prevent extreme values
+MAX_TOTAL_WEIGHT = 5.0
+
+# Competition importance weights - adjusted by confederation strength
 COMPETITION_WEIGHTS = {
-    'FIFA World Cup': 3.0,
+    'FIFA World Cup': 4.0,
     'Confederations Cup': 2.5,
-    'UEFA Euro': 2.5,
-    "Copa Am\u00e9rica": 2.5,
-    'African Cup of Nations': 2.5,
-    'AFC Asian Cup': 2.5,
-    'CONCACAF Championship': 2.5,
-    'Oceania Nations Cup': 2.5,
-    'FIFA World Cup qualification': 2.0,
+    'UEFA Euro': 3.2,  
+    'UEFA Nations League': 2.5,
+    "Copa Am\u00e9rica": 3.0, 
+    'African Cup of Nations': 2.5,  
+    'AFC Asian Cup': 2.0,  
+    'CONCACAF Championship': 1.5,  
+    'CONCACAF Nations League': 1.5,
+    'FIFA World Cup qualification': 2.0,  # Base, adjusted by confederation below
     'UEFA Euro qualification': 2.0,
     'Friendly': 1.0,
     'Default': 1.5
 }
 
+# Confederation mappings for WC2026 teams (simplified)
+CONFEDERATION_TEAMS = {
+    'UEFA': ['Albania', 'Andorra', 'Armenia', 'Austria', 'Azerbaijan', 'Belarus', 'Belgium', 
+             'Bosnia and Herzegovina', 'Bulgaria', 'Croatia', 'Cyprus', 'Czechia', 'Denmark', 
+             'England', 'Estonia', 'Faroe Islands', 'Finland', 'France', 'Georgia', 'Germany', 
+             'Gibraltar', 'Greece', 'Hungary', 'Iceland', 'Ireland', 'Israel', 'Italy', 'Kazakhstan',
+             'Kosovo', 'Latvia', 'Liechtenstein', 'Lithuania', 'Luxembourg', 'Malta', 'Moldova',
+             'Monaco', 'Montenegro', 'Netherlands', 'North Macedonia', 'Northern Ireland', 'Norway',
+             'Poland', 'Portugal', 'Romania', 'Russia', 'San Marino', 'Scotland', 'Serbia', 'Slovakia',
+             'Slovenia', 'Spain', 'Sweden', 'Switzerland', 'Türkiye', 'Ukraine', 'Wales'],
+    
+    'CONMEBOL': ['Argentina', 'Bolivia', 'Brazil', 'Chile', 'Colombia', 'Ecuador', 'Paraguay', 
+                 'Peru', 'Uruguay', 'Venezuela'],
+    
+    'CAF': ['Algeria', 'Angola', 'Benin', 'Botswana', 'Burkina Faso', 'Burundi', 'Cameroon',
+            'Cape Verde', 'Central African Republic', 'Chad', 'Comoros', 'Congo', 
+            'Congo DR', 'Djibouti', 'Egypt', 'Equatorial Guinea', 'Eritrea', 'Eswatini',
+            'Ethiopia', 'Gabon', 'Gambia', 'Ghana', 'Guinea', 'Guinea-Bissau', 'Ivory Coast',
+            'Kenya', 'Lesotho', 'Liberia', 'Libya', 'Madagascar', 'Malawi', 'Mali',
+            'Mauritania', 'Mauritius', 'Morocco', 'Mozambique', 'Namibia', 'Niger', 'Nigeria',
+            'Rwanda', 'Sao Tome and Principe', 'Senegal', 'Seychelles', 'Sierra Leone',
+            'Somalia', 'South Africa', 'South Sudan', 'Sudan', 'Tanzania', 'Togo', 'Tunisia',
+            'Uganda', 'Zambia', 'Zimbabwe'],
+    
+    'AFC': ['Australia', 'Bahrain', 'Bangladesh', 'Bhutan', 'Brunei', 'Cambodia', 'China',
+            'Guam', 'Hong Kong', 'India', 'Indonesia', 'Iran', 'Iraq', 'Japan', 'Jordan',
+            'Kuwait', 'Kyrgyzstan', 'Laos', 'Lebanon', 'Macau', 'Malaysia', 'Maldives',
+            'Mongolia', 'Myanmar', 'Nepal', 'North Korea', 'Oman', 'Pakistan', 'Palestine',
+            'Philippines', 'Qatar', 'Saudi Arabia', 'Singapore', 'South Korea', 'Sri Lanka',
+            'Syria', 'Tajikistan', 'Thailand', 'Timor-Leste', 'Turkmenistan', 'UAE',
+            'Uzbekistan', 'Vietnam', 'Yemen'],
+    
+    'CONCACAF': ['Antigua and Barbuda', 'Bahamas', 'Barbados', 'Belize', 'Bermuda', 'Canada',
+                 'Costa Rica', 'Cuba', 'Dominica', 'Dominican Republic', 'El Salvador',
+                 'Grenada', 'Guatemala', 'Haiti', 'Honduras', 'Jamaica', 'Mexico',
+                 'Nicaragua', 'Panama', 'Saint Kitts and Nevis', 'Saint Lucia',
+                 'Saint Vincent and the Grenadines', 'Trinidad and Tobago', 'United States'],
+    
+    'OFC': ['American Samoa', 'Cook Islands', 'Fiji', 'New Caledonia', 'New Zealand',
+            'Papua New Guinea', 'Samoa', 'Solomon Islands', 'Tahiti', 'Tonga', 'Vanuatu']
+}
 
-def get_competition_weight(tournament: str) -> float:
-    """Get weight for a competition type."""
+# Qualifier weights by confederation strength
+# CONMEBOL hardest (10 teams, 6.5 spots = 65% qualification rate)
+# UEFA moderate (55 teams, 16 spots = 29% qualification rate)
+# Others easier
+QUALIFIER_WEIGHTS = {
+    'CONMEBOL': 3.0,  # Hardest qualifiers
+    'UEFA': 2.5,      # Moderate difficulty
+    'CAF': 2.0,       # Easier
+    'AFC': 1.8,       # Easier
+    'CONCACAF': 1.8,  # Easier
+    'OFC': 1.5,       # Easiest (0.5 spots)
+    'Unknown': 2.0
+}
+
+def get_team_confederation(team: str) -> str:
+    """Get confederation for a team."""
+    for conf, teams in CONFEDERATION_TEAMS.items():
+        if team in teams:
+            return conf
+    return 'Unknown'
+
+def get_competition_weight(tournament: str, home_team: str = None, away_team: str = None) -> float:
+    """
+    Get weight for a competition type.
+    For World Cup qualifiers, weight by confederation strength.
+    """
+    if tournament == 'FIFA World Cup qualification' and home_team and away_team:
+        # Get confederations for both teams
+        home_conf = get_team_confederation(home_team)
+        away_conf = get_team_confederation(away_team)
+        
+        # Use the higher weight (stronger confederation)
+        home_weight = QUALIFIER_WEIGHTS.get(home_conf, 2.0)
+        away_weight = QUALIFIER_WEIGHTS.get(away_conf, 2.0)
+        return max(home_weight, away_weight)
+    
     return COMPETITION_WEIGHTS.get(tournament, COMPETITION_WEIGHTS['Default'])
 
 
 def calculate_recency_weight(match_date: datetime, current_year: int = 2026) -> float:
     """
-    Weight for a match in rolling aggregates / DC fit.
-    Last RECENCY_WINDOW_YEARS full calendar-year band (current_year - window .. current_year)
-    uses RECENCY_WEIGHT_RECENT; older rows use RECENCY_WEIGHT_BASE.
+    Exponential decay recency weighting.
+    Weight = exp(-λ * age) where age = current_year - match_year
+    Smooth decay avoids binary cliff at RECENCY_WINDOW_YEARS.
     """
-    y = match_date.year if hasattr(match_date, "year") else int(match_date)
-    if y >= current_year - RECENCY_WINDOW_YEARS:
-        return RECENCY_WEIGHT_RECENT
-    return RECENCY_WEIGHT_BASE
+    import numpy as np
+    match_year = match_date.year if hasattr(match_date, "year") else int(match_date)
+    age = current_year - match_year
+    return np.exp(-RECENCY_LAMBDA * age)
+
+
+def calculate_age_penalty(match_date: datetime, current_year: int = 2026) -> float:
+    """
+    Age penalty multiplier to reduce weights for old competitions.
+    Allows weights to go below the competition floor (2.40 for WC, 1.92 for Euro).
+    """
+    match_year = match_date.year if hasattr(match_date, "year") else int(match_date)
+    age = current_year - match_year
+    
+    # Age penalty tiers (more aggressive decay for older matches)
+    if age <= 4:  # 2022-2026
+        return 1.0
+    elif age <= 8:  # 2018-2020
+        return 0.95
+    elif age <= 12:  # 2014-2016
+        return 0.85
+    elif age <= 16:  # 2010-2012
+        return 0.70
+    elif age <= 20:  # 2006-2008
+        return 0.55
+    elif age <= 24:  # 2002-2004
+        return 0.40
+    elif age <= 32:  # 1994-2000
+        return 0.30
+    elif age <= 40:  # 1986-1992
+        return 0.20
+    else:  # <1986
+        return 0.15
 
 
 class AdvancedFeatureExtractor:
@@ -129,7 +246,13 @@ class AdvancedFeatureExtractor:
             # Calculate weights
             comp_weight = get_competition_weight(match.get('tournament', 'Default'))
             recency_weight = calculate_recency_weight(match['date'])
-            total_weight = comp_weight * recency_weight
+            age_penalty = calculate_age_penalty(match['date'])
+            
+            # Hybrid formula: balance competition importance vs recency
+            total_weight = (comp_weight * COMPETITION_WEIGHT_RATIO) + (recency_weight * RECENCY_WEIGHT_RATIO)
+            
+            # Apply age penalty to allow weights below competition floor
+            total_weight = total_weight * age_penalty
             
             # Update stats
             total_weighted_matches += total_weight
@@ -173,9 +296,21 @@ class AdvancedFeatureExtractor:
         last_20 = recent_form_scores[:20]
         
         if last_20:
-            # Weight more recent matches higher
-            form_weights = np.linspace(1.0, 2.0, len(last_20))  # 1.0 to 2.0
-            form_values = [x[1] for x in last_20]
+            # Weight by both chronological position AND time decay
+            # Combination of linear ordering (1.0 to 2.0) and exponential decay
+            chronological_weights = np.linspace(1.0, 2.0, len(last_20))  # Recent matches get higher weight
+            
+            # Time decay based on actual match year
+            time_weights = []
+            for match_date, _, _ in last_20:  # Unpack 3 values: date, result_score, weight
+                age = 2026 - match_date.year
+                time_weight = np.exp(-RECENCY_LAMBDA * age)  # Decay with age
+                time_weights.append(time_weight)
+            time_weights = np.array(time_weights)
+            
+            # Combined weights: chronological position × time decay
+            form_weights = chronological_weights * time_weights
+            form_values = [x[1] for x in last_20]  # x[1] is result_score
             stats['recent_form'] = np.average(form_values, weights=form_weights)
         else:
             stats['recent_form'] = 0.5
@@ -190,6 +325,22 @@ class AdvancedFeatureExtractor:
             stats['trend'] = recent_avg - older_avg  # Positive = improving
         else:
             stats['trend'] = 0.0
+        
+        # Additional trend features: last 4 years vs last 8 years (smoother comparison)
+        last_4_years = [m for m in recent_form_scores if m[0].year >= 2022]
+        last_8_years = [m for m in recent_form_scores if 2018 <= m[0].year <= 2025]
+        
+        if last_4_years and last_8_years and len(last_4_years) >= 5:
+            last_4_avg = np.mean([x[1] for x in last_4_years])
+            # Last 8 years but excluding last 4 (to avoid double counting)
+            years_4_to_8 = [m for m in recent_form_scores if 2018 <= m[0].year < 2022]
+            if years_4_to_8:
+                years_4_to_8_avg = np.mean([x[1] for x in years_4_to_8])
+                stats['trend_last_4_vs_8'] = last_4_avg - years_4_to_8_avg
+            else:
+                stats['trend_last_4_vs_8'] = 0.0
+        else:
+            stats['trend_last_4_vs_8'] = 0.0
         
         return stats
     
@@ -206,6 +357,7 @@ class AdvancedFeatureExtractor:
             'clean_sheet_rate': 0.2,
             'recent_form': 0.5,
             'trend': 0.0,
+            'trend_last_4_vs_8': 0.0,
         }
     
     def get_h2h_stats(self, team1: str, team2: str) -> Dict:

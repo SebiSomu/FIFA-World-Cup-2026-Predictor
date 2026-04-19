@@ -1,105 +1,105 @@
 match_id,stage,group,home_team,away_team,predicted_home_score,predicted_away_score,prob_home_win,prob_draw,prob_away_win,winner,fifa_match_number,score_detail
-GS001,Group Stage,A,Mexico,South Africa,1,1,0.693,0.204,0.103,,,
-GS002,Group Stage,A,Mexico,Korea Republic,3,4,0.458,0.276,0.266,,,
-GS003,Group Stage,A,Mexico,Czechia,2,1,0.464,0.275,0.261,,,
-GS004,Group Stage,A,South Africa,Korea Republic,1,2,0.383,0.285,0.332,,,
-GS005,Group Stage,A,South Africa,Czechia,0,1,0.389,0.285,0.327,,,
-GS006,Group Stage,A,Korea Republic,Czechia,0,1,0.351,0.308,0.341,,,
-GS007,Group Stage,B,Canada,Bosnia and Herzegovina,0,0,0.426,0.274,0.301,,,
-GS008,Group Stage,B,Canada,Qatar,3,2,0.643,0.217,0.14,,,
-GS009,Group Stage,B,Canada,Switzerland,1,2,0.24,0.246,0.514,,,
-GS010,Group Stage,B,Bosnia and Herzegovina,Qatar,3,0,0.689,0.191,0.12,,,
-GS011,Group Stage,B,Bosnia and Herzegovina,Switzerland,0,0,0.273,0.243,0.484,,,
-GS012,Group Stage,B,Qatar,Switzerland,3,2,0.113,0.174,0.713,,,
-GS013,Group Stage,C,Brazil,Morocco,4,0,0.764,0.163,0.073,,,
-GS014,Group Stage,C,Brazil,Haiti,3,1,0.981,0.016,0.004,,,
-GS015,Group Stage,C,Brazil,Scotland,1,0,0.703,0.177,0.119,,,
-GS016,Group Stage,C,Morocco,Haiti,1,0,0.799,0.145,0.056,,,
-GS017,Group Stage,C,Morocco,Scotland,0,2,0.33,0.298,0.372,,,
-GS018,Group Stage,C,Haiti,Scotland,1,0,0.072,0.137,0.791,,,
-GS019,Group Stage,D,United States,Paraguay,1,1,0.351,0.263,0.385,,,
-GS020,Group Stage,D,United States,Australia,1,0,0.4,0.264,0.336,,,
-GS021,Group Stage,D,United States,Türkiye,1,2,0.394,0.284,0.322,,,
-GS022,Group Stage,D,Paraguay,Australia,0,1,0.522,0.248,0.23,,,
-GS023,Group Stage,D,Paraguay,Türkiye,1,0,0.419,0.282,0.3,,,
-GS024,Group Stage,D,Australia,Türkiye,1,0,0.407,0.283,0.31,,,
-GS025,Group Stage,E,Germany,Curaçao,6,0,0.994,0.005,0.001,,,
-GS026,Group Stage,E,Germany,Côte d'Ivoire,2,2,0.49,0.27,0.24,,,
-GS027,Group Stage,E,Germany,Ecuador,2,0,0.834,0.108,0.058,,,
-GS028,Group Stage,E,Curaçao,Côte d'Ivoire,1,1,0.38,0.285,0.334,,,
-GS029,Group Stage,E,Curaçao,Ecuador,1,2,0.09,0.153,0.757,,,
-GS030,Group Stage,E,Côte d'Ivoire,Ecuador,0,0,0.276,0.294,0.43,,,
-GS031,Group Stage,F,Netherlands,Japan,3,1,0.828,0.115,0.057,,,
-GS032,Group Stage,F,Netherlands,Sweden,1,0,0.624,0.201,0.175,,,
-GS033,Group Stage,F,Netherlands,Tunisia,0,2,0.829,0.12,0.051,,,
-GS034,Group Stage,F,Japan,Sweden,3,2,0.247,0.237,0.516,,,
-GS035,Group Stage,F,Japan,Tunisia,4,1,0.493,0.269,0.238,,,
-GS036,Group Stage,F,Sweden,Tunisia,4,0,0.744,0.164,0.092,,,
-GS037,Group Stage,G,Belgium,Egypt,1,3,0.729,0.167,0.105,,,
-GS038,Group Stage,G,Belgium,Iran,0,1,0.661,0.203,0.136,,,
-GS039,Group Stage,G,Belgium,New Zealand,4,1,0.86,0.093,0.047,,,
-GS040,Group Stage,G,Egypt,Iran,1,0,0.393,0.296,0.311,,,
-GS041,Group Stage,G,Egypt,New Zealand,0,2,0.601,0.223,0.176,,,
-GS042,Group Stage,G,Iran,New Zealand,2,0,0.643,0.217,0.141,,,
-GS043,Group Stage,H,Spain,Cabo Verde,0,0,0.572,0.249,0.179,,,
-GS044,Group Stage,H,Spain,Saudi Arabia,6,0,0.922,0.061,0.017,,,
-GS045,Group Stage,H,Spain,Uruguay,1,1,0.658,0.203,0.139,,,
-GS046,Group Stage,H,Cabo Verde,Saudi Arabia,1,2,0.321,0.299,0.38,,,
-GS047,Group Stage,H,Cabo Verde,Uruguay,0,2,0.26,0.292,0.448,,,
-GS048,Group Stage,H,Saudi Arabia,Uruguay,1,0,0.133,0.205,0.662,,,
-GS049,Group Stage,I,France,Senegal,2,3,0.788,0.144,0.068,,,
-GS050,Group Stage,I,France,Norway,1,1,0.722,0.163,0.114,,,
-GS051,Group Stage,I,France,Iraq,7,0,0.88,0.088,0.032,,,
-GS052,Group Stage,I,Senegal,Norway,2,1,0.347,0.27,0.384,,,
-GS053,Group Stage,I,Senegal,Iraq,4,0,0.563,0.263,0.174,,,
-GS054,Group Stage,I,Norway,Iraq,4,1,0.727,0.172,0.101,,,
-GS055,Group Stage,J,Argentina,Algeria,3,1,0.86,0.1,0.04,,,
-GS056,Group Stage,J,Argentina,Austria,5,0,0.711,0.169,0.121,,,
-GS057,Group Stage,J,Argentina,Jordan,1,1,0.935,0.051,0.014,,,
-GS058,Group Stage,J,Algeria,Austria,0,2,0.253,0.24,0.507,,,
-GS059,Group Stage,J,Algeria,Jordan,0,0,0.614,0.233,0.153,,,
-GS060,Group Stage,J,Austria,Jordan,2,0,0.849,0.104,0.046,,,
-GS061,Group Stage,K,Portugal,DR Congo,3,0,0.886,0.083,0.031,,,
-GS062,Group Stage,K,Portugal,Uzbekistan,2,0,0.863,0.097,0.04,,,
-GS063,Group Stage,K,Portugal,Colombia,3,1,0.623,0.225,0.152,,,
-GS064,Group Stage,K,DR Congo,Uzbekistan,1,1,0.43,0.259,0.311,,,
-GS065,Group Stage,K,DR Congo,Colombia,0,2,0.198,0.251,0.551,,,
-GS066,Group Stage,K,Uzbekistan,Colombia,1,1,0.23,0.26,0.51,,,
-GS067,Group Stage,L,England,Croatia,0,1,0.607,0.231,0.163,,,
-GS068,Group Stage,L,England,Ghana,5,0,0.912,0.067,0.021,,,
-GS069,Group Stage,L,England,Panama,2,0,0.964,0.028,0.007,,,
-GS070,Group Stage,L,Croatia,Ghana,7,0,0.807,0.137,0.056,,,
-GS071,Group Stage,L,Croatia,Panama,4,2,0.898,0.077,0.025,,,
-GS072,Group Stage,L,Ghana,Panama,1,0,0.596,0.23,0.174,,,
-M073,Round of 32,,Czechia,Switzerland,1,0,0.293,0.296,0.41,Czechia,73.0,0-0 (ET: +1-0)
-M074,Round of 32,,Germany,Mexico,3,2,0.715,0.17,0.115,Germany,74.0,3-2
-M075,Round of 32,,Japan,Scotland,0,1,0.258,0.251,0.491,Scotland,75.0,0-1
-M076,Round of 32,,Brazil,Netherlands,1,2,0.579,0.217,0.205,Netherlands,76.0,1-2
-M077,Round of 32,,Senegal,Uruguay,0,1,0.221,0.261,0.518,Uruguay,77.0,0-1
-M078,Round of 32,,Ecuador,France,2,3,0.189,0.216,0.596,France,78.0,2-3
-M079,Round of 32,,Korea Republic,Sweden,1,2,0.331,0.299,0.369,Sweden,79.0,1-2
-M080,Round of 32,,Croatia,Norway,1,1,0.65,0.204,0.146,Croatia,80.0,1-1 (ET: +0-0) [PKs: 1-0]
-M081,Round of 32,,Australia,Canada,2,3,0.612,0.228,0.16,Canada,81.0,2-3
-M082,Round of 32,,Iran,Côte d'Ivoire,2,0,0.453,0.277,0.27,Iran,82.0,2-0
-M083,Round of 32,,Colombia,England,2,2,0.2,0.251,0.549,England,83.0,2-2 (ET: +0-0) [PKs: 0-1]
-M084,Round of 32,,Saudi Arabia,Austria,1,6,0.172,0.215,0.613,Austria,84.0,1-6
-M085,Round of 32,,Bosnia and Herzegovina,Belgium,1,2,0.229,0.225,0.546,Belgium,85.0,1-2
-M086,Round of 32,,Argentina,Spain,2,2,0.406,0.261,0.333,Argentina,86.0,2-2 (ET: +0-0) [PKs: 1-0]
-M087,Round of 32,,Portugal,Paraguay,0,0,0.669,0.198,0.133,Paraguay,87.0,0-0 (ET: +0-0) [PKs: 0-1]
-M088,Round of 32,,United States,Egypt,1,0,0.483,0.259,0.257,United States,88.0,1-0
-M089,Round of 16,,Germany,Uruguay,2,1,0.604,0.208,0.188,Germany,89.0,2-1
-M090,Round of 16,,Czechia,Scotland,2,3,0.317,0.299,0.385,Scotland,90.0,2-3
-M091,Round of 16,,Netherlands,France,1,0,0.498,0.234,0.268,Netherlands,91.0,1-0
-M092,Round of 16,,Sweden,Croatia,2,1,0.405,0.261,0.333,Sweden,92.0,1-1 (ET: +1-0)
-M093,Round of 16,,England,Austria,2,0,0.747,0.155,0.098,England,93.0,2-0
-M094,Round of 16,,Canada,Iran,0,1,0.336,0.302,0.362,Iran,94.0,0-1
-M095,Round of 16,,Argentina,United States,6,0,0.839,0.111,0.05,Argentina,95.0,6-0
-M096,Round of 16,,Belgium,Paraguay,3,2,0.604,0.21,0.186,Belgium,96.0,3-2
-M097,Quarter-Final,,Germany,Scotland,3,0,0.667,0.186,0.146,Germany,97.0,3-0
-M098,Quarter-Final,,England,Iran,4,1,0.82,0.129,0.051,England,98.0,4-1
-M099,Quarter-Final,,Netherlands,Sweden,3,2,0.624,0.201,0.175,Netherlands,99.0,3-2
-M100,Quarter-Final,,Argentina,Belgium,1,0,0.678,0.182,0.14,Argentina,100.0,1-0
-M101,Semi-Final,,Germany,England,3,2,0.415,0.245,0.34,Germany,101.0,3-2
-M102,Semi-Final,,Netherlands,Argentina,2,0,0.441,0.247,0.312,Netherlands,102.0,2-0
-M103,Third Place,,England,Argentina,3,0,0.535,0.24,0.225,England,103.0,3-0
-M104,Final,,Germany,Netherlands,4,1,0.533,0.22,0.247,Germany,104.0,4-1
+GS001,Group Stage,A,Mexico,South Africa,1,1,0.677,0.224,0.099,,,
+GS002,Group Stage,A,Mexico,Korea Republic,4,0,0.5,0.268,0.232,,,
+GS003,Group Stage,A,Mexico,Czechia,2,1,0.511,0.265,0.223,,,
+GS004,Group Stage,A,South Africa,Korea Republic,1,2,0.333,0.287,0.38,,,
+GS005,Group Stage,A,South Africa,Czechia,0,1,0.344,0.287,0.369,,,
+GS006,Group Stage,A,Korea Republic,Czechia,0,1,0.356,0.308,0.336,,,
+GS007,Group Stage,B,Canada,Bosnia and Herzegovina,0,0,0.632,0.224,0.144,,,
+GS008,Group Stage,B,Canada,Qatar,5,0,0.838,0.113,0.05,,,
+GS009,Group Stage,B,Canada,Switzerland,1,2,0.221,0.251,0.527,,,
+GS010,Group Stage,B,Bosnia and Herzegovina,Qatar,3,0,0.668,0.191,0.141,,,
+GS011,Group Stage,B,Bosnia and Herzegovina,Switzerland,0,0,0.092,0.161,0.747,,,
+GS012,Group Stage,B,Qatar,Switzerland,2,6,0.05,0.06,0.917,,,
+GS013,Group Stage,C,Brazil,Morocco,2,2,0.536,0.293,0.171,,,
+GS014,Group Stage,C,Brazil,Haiti,4,0,0.95,0.05,0.05,,,
+GS015,Group Stage,C,Brazil,Scotland,1,0,0.78,0.15,0.069,,,
+GS016,Group Stage,C,Morocco,Haiti,2,0,0.935,0.053,0.05,,,
+GS017,Group Stage,C,Morocco,Scotland,1,0,0.584,0.268,0.148,,,
+GS018,Group Stage,C,Haiti,Scotland,1,0,0.071,0.136,0.793,,,
+GS019,Group Stage,D,United States,Paraguay,1,0,0.393,0.288,0.318,,,
+GS020,Group Stage,D,United States,Australia,0,3,0.374,0.281,0.346,,,
+GS021,Group Stage,D,United States,Türkiye,1,2,0.371,0.286,0.343,,,
+GS022,Group Stage,D,Paraguay,Australia,0,1,0.385,0.309,0.306,,,
+GS023,Group Stage,D,Paraguay,Türkiye,1,0,0.403,0.283,0.314,,,
+GS024,Group Stage,D,Australia,Türkiye,1,0,0.381,0.285,0.334,,,
+GS025,Group Stage,E,Germany,Curaçao,6,0,0.95,0.05,0.05,,,
+GS026,Group Stage,E,Germany,Côte d'Ivoire,2,2,0.545,0.257,0.198,,,
+GS027,Group Stage,E,Germany,Ecuador,1,0,0.593,0.235,0.172,,,
+GS028,Group Stage,E,Curaçao,Côte d'Ivoire,1,1,0.328,0.287,0.385,,,
+GS029,Group Stage,E,Curaçao,Ecuador,0,4,0.05,0.097,0.878,,,
+GS030,Group Stage,E,Côte d'Ivoire,Ecuador,0,0,0.23,0.285,0.485,,,
+GS031,Group Stage,F,Netherlands,Japan,2,1,0.61,0.216,0.174,,,
+GS032,Group Stage,F,Netherlands,Sweden,1,1,0.737,0.157,0.106,,,
+GS033,Group Stage,F,Netherlands,Tunisia,0,1,0.779,0.155,0.065,,,
+GS034,Group Stage,F,Japan,Sweden,4,1,0.553,0.235,0.212,,,
+GS035,Group Stage,F,Japan,Tunisia,4,1,0.618,0.249,0.133,,,
+GS036,Group Stage,F,Sweden,Tunisia,3,0,0.555,0.253,0.192,,,
+GS037,Group Stage,G,Belgium,Egypt,1,1,0.732,0.182,0.086,,,
+GS038,Group Stage,G,Belgium,Iran,0,2,0.719,0.178,0.103,,,
+GS039,Group Stage,G,Belgium,New Zealand,4,0,0.886,0.087,0.05,,,
+GS040,Group Stage,G,Egypt,Iran,1,0,0.352,0.308,0.34,,,
+GS041,Group Stage,G,Egypt,New Zealand,0,0,0.562,0.278,0.16,,,
+GS042,Group Stage,G,Iran,New Zealand,2,0,0.658,0.222,0.12,,,
+GS043,Group Stage,H,Spain,Cabo Verde,0,0,0.702,0.202,0.096,,,
+GS044,Group Stage,H,Spain,Saudi Arabia,7,1,0.95,0.05,0.05,,,
+GS045,Group Stage,H,Spain,Uruguay,1,0,0.742,0.178,0.08,,,
+GS046,Group Stage,H,Cabo Verde,Saudi Arabia,1,2,0.317,0.299,0.384,,,
+GS047,Group Stage,H,Cabo Verde,Uruguay,0,2,0.201,0.277,0.522,,,
+GS048,Group Stage,H,Saudi Arabia,Uruguay,0,3,0.091,0.222,0.686,,,
+GS049,Group Stage,I,France,Senegal,2,1,0.742,0.176,0.082,,,
+GS050,Group Stage,I,France,Norway,1,0,0.684,0.188,0.128,,,
+GS051,Group Stage,I,France,Iraq,8,0,0.95,0.05,0.05,,,
+GS052,Group Stage,I,Senegal,Norway,2,1,0.335,0.266,0.399,,,
+GS053,Group Stage,I,Senegal,Iraq,5,0,0.784,0.159,0.057,,,
+GS054,Group Stage,I,Norway,Iraq,6,0,0.897,0.077,0.05,,,
+GS055,Group Stage,J,Argentina,Algeria,3,1,0.866,0.099,0.05,,,
+GS056,Group Stage,J,Argentina,Austria,4,1,0.734,0.179,0.087,,,
+GS057,Group Stage,J,Argentina,Jordan,1,1,0.949,0.05,0.05,,,
+GS058,Group Stage,J,Algeria,Austria,0,2,0.284,0.249,0.466,,,
+GS059,Group Stage,J,Algeria,Jordan,0,0,0.67,0.191,0.139,,,
+GS060,Group Stage,J,Austria,Jordan,2,0,0.802,0.133,0.065,,,
+GS061,Group Stage,K,Portugal,DR Congo,2,0,0.863,0.106,0.05,,,
+GS062,Group Stage,K,Portugal,Uzbekistan,2,0,0.85,0.113,0.05,,,
+GS063,Group Stage,K,Portugal,Colombia,3,0,0.517,0.254,0.229,,,
+GS064,Group Stage,K,DR Congo,Uzbekistan,0,2,0.352,0.348,0.3,,,
+GS065,Group Stage,K,DR Congo,Colombia,0,1,0.096,0.218,0.686,,,
+GS066,Group Stage,K,Uzbekistan,Colombia,0,4,0.111,0.225,0.664,,,
+GS067,Group Stage,L,England,Croatia,0,2,0.628,0.226,0.146,,,
+GS068,Group Stage,L,England,Ghana,5,2,0.95,0.05,0.05,,,
+GS069,Group Stage,L,England,Panama,1,1,0.95,0.05,0.05,,,
+GS070,Group Stage,L,Croatia,Ghana,8,0,0.885,0.085,0.05,,,
+GS071,Group Stage,L,Croatia,Panama,4,2,0.886,0.083,0.05,,,
+GS072,Group Stage,L,Ghana,Panama,0,2,0.416,0.268,0.316,,,
+M073,Round of 32,,Czechia,Bosnia and Herzegovina,1,0,0.378,0.3,0.322,Czechia,73.0,0-0 (ET: +1-0)
+M074,Round of 32,,Germany,Canada,4,0,0.801,0.13,0.069,Germany,74.0,4-0
+M075,Round of 32,,Japan,Morocco,0,0,0.351,0.329,0.32,Morocco,75.0,0-0 (ET: +0-0) [PKs: 0-1]
+M076,Round of 32,,Brazil,Sweden,3,0,0.769,0.15,0.081,Brazil,76.0,3-0
+M077,Round of 32,,France,Paraguay,2,0,0.802,0.145,0.053,France,77.0,2-0
+M078,Round of 32,,Ecuador,Senegal,0,0,0.423,0.324,0.253,Senegal,78.0,0-0 (ET: +0-0) [PKs: 0-1]
+M079,Round of 32,,Mexico,Netherlands,1,2,0.209,0.25,0.542,Netherlands,79.0,1-2
+M080,Round of 32,,Croatia,Uzbekistan,4,0,0.753,0.173,0.074,Croatia,80.0,4-0
+M081,Round of 32,,Australia,Norway,1,2,0.262,0.251,0.487,Norway,81.0,1-1 (ET: +0-1)
+M082,Round of 32,,Iran,Côte d'Ivoire,1,2,0.472,0.273,0.255,Côte d'Ivoire,82.0,1-2
+M083,Round of 32,,Colombia,England,2,0,0.283,0.285,0.432,Colombia,83.0,2-0
+M084,Round of 32,,Spain,Austria,3,0,0.833,0.116,0.051,Spain,84.0,3-0
+M085,Round of 32,,Switzerland,Belgium,1,2,0.399,0.255,0.347,Belgium,85.0,1-2
+M086,Round of 32,,Argentina,Uruguay,1,1,0.614,0.259,0.127,Argentina,86.0,1-1 (ET: +0-0) [PKs: 1-0]
+M087,Round of 32,,Portugal,Panama,5,0,0.947,0.041,0.012,Portugal,87.0,5-0
+M088,Round of 32,,Türkiye,Egypt,1,0,0.411,0.298,0.29,Türkiye,88.0,1-0
+M089,Round of 16,,Germany,France,1,2,0.316,0.242,0.442,France,89.0,1-2
+M090,Round of 16,,Czechia,Morocco,2,2,0.288,0.296,0.416,Morocco,90.0,2-2 (ET: +0-0) [PKs: 0-1]
+M091,Round of 16,,Brazil,Senegal,1,0,0.672,0.212,0.117,Brazil,91.0,1-0
+M092,Round of 16,,Netherlands,Croatia,0,1,0.523,0.236,0.241,Croatia,92.0,0-1
+M093,Round of 16,,Colombia,Spain,0,3,0.205,0.235,0.559,Spain,93.0,0-3
+M094,Round of 16,,Norway,Côte d'Ivoire,0,1,0.54,0.258,0.202,Côte d'Ivoire,94.0,0-1
+M095,Round of 16,,Argentina,Türkiye,4,4,0.529,0.261,0.21,Argentina,95.0,3-3 (ET: +1-1) [PKs: 1-0]
+M096,Round of 16,,Belgium,Portugal,3,1,0.335,0.259,0.406,Belgium,96.0,3-1
+M097,Quarter-Final,,France,Morocco,3,1,0.591,0.273,0.136,France,97.0,1-1 (ET: +2-0)
+M098,Quarter-Final,,Spain,Côte d'Ivoire,1,0,0.65,0.223,0.127,Spain,98.0,1-0
+M099,Quarter-Final,,Brazil,Croatia,3,1,0.572,0.239,0.188,Brazil,99.0,1-1 (ET: +2-0)
+M100,Quarter-Final,,Argentina,Belgium,1,1,0.626,0.227,0.147,Argentina,100.0,1-1 (ET: +0-0) [PKs: 1-0]
+M101,Semi-Final,,France,Spain,3,2,0.336,0.264,0.401,France,101.0,3-2
+M102,Semi-Final,,Brazil,Argentina,0,3,0.353,0.294,0.353,Argentina,102.0,0-3
+M103,Third Place,,Spain,Brazil,2,0,0.616,0.22,0.163,Spain,103.0,2-0
+M104,Final,,France,Argentina,2,0,0.412,0.292,0.296,France,104.0,2-0

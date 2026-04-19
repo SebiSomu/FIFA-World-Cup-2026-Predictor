@@ -24,6 +24,18 @@ from scipy.stats import poisson
 import warnings
 warnings.filterwarnings('ignore')
 
+# Import hybrid formula parameters from advanced_features
+import sys
+from pathlib import Path
+sys.path.append(str(Path(__file__).resolve().parent.parent))
+from features.advanced_features import (
+    COMPETITION_WEIGHT_RATIO,
+    RECENCY_WEIGHT_RATIO,
+    COMPETITION_WEIGHTS,
+    MAX_TOTAL_WEIGHT,
+    calculate_age_penalty
+)
+
 
 class DixonColesModel:
     """
@@ -392,17 +404,15 @@ def train_dixon_coles_from_historical(matches_df, recency_years=4):
     )
     
     # Competition weights (WC > EURO > etc.)
-    competition_weights = {
-        'FIFA World Cup': 3.0,
-        'UEFA Euro': 2.5,
-        'Copa America': 2.5,
-        'African Cup of Nations': 2.0,
-        'Friendly': 1.0
-    }
-    matches_df['comp_weight'] = matches_df['tournament'].map(competition_weights).fillna(1.5)
+    # Use competition weights from advanced_features
+    matches_df['comp_weight'] = matches_df['tournament'].map(COMPETITION_WEIGHTS).fillna(1.5)
     
-    # Combined weights
-    matches_df['weight'] = matches_df['recency_weight'] * matches_df['comp_weight']
+    # Hybrid formula: balance competition importance vs recency
+    matches_df['weight'] = (matches_df['comp_weight'] * COMPETITION_WEIGHT_RATIO) + (matches_df['recency_weight'] * RECENCY_WEIGHT_RATIO)
+    
+    # Apply age penalty to allow weights below competition floor
+    matches_df['age_penalty'] = matches_df['date'].apply(lambda d: calculate_age_penalty(pd.to_datetime(d)))
+    matches_df['weight'] = matches_df['weight'] * matches_df['age_penalty']
     
     # Fit model
     model = DixonColesModel(rho=-0.13)

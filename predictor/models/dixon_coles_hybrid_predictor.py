@@ -24,6 +24,7 @@ import pickle
 from features.advanced_features import (
     AdvancedFeatureExtractor,
     COMPETITION_WEIGHTS,
+    RECENCY_LAMBDA,
     RECENCY_WEIGHT_BASE,
     RECENCY_WEIGHT_RECENT,
     RECENCY_WINDOW_YEARS,
@@ -123,11 +124,8 @@ class DixonColesHybridPredictor:
         print(f"Fitting Dixon-Coles on {len(matches_df)} matches...")
         
         current_year = 2026
-        y = matches_df["date"].dt.year
-        matches_df["recency_weight"] = np.where(
-            y >= current_year - RECENCY_WINDOW_YEARS,
-            RECENCY_WEIGHT_RECENT,
-            RECENCY_WEIGHT_BASE,
+        matches_df["recency_weight"] = matches_df["date"].apply(
+            lambda d: np.exp(-RECENCY_LAMBDA * (current_year - d.year))
         )
 
         if "tournament" in matches_df.columns:
@@ -180,8 +178,8 @@ class DixonColesHybridPredictor:
         if not neutral:
             elo_factor += 0.1  # Home advantage
             
-        adjusted_home = base_home * (1 + elo_factor * 0.15)
-        adjusted_away = base_away * (1 - elo_factor * 0.15)
+        adjusted_home = base_home * (1 + elo_factor * 0.30)  # DOUBLED from 0.15
+        adjusted_away = base_away * (1 - elo_factor * 0.30)  # DOUBLED from 0.15
         
         # Get H2H adjustment
         h2h = self.extractor.get_h2h_stats(home_team, away_team)

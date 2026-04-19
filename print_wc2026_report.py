@@ -28,7 +28,7 @@ def main() -> None:
     w("  FIFA WORLD CUP 2026 - FULL SIMULATION REPORT")
     w("=" * 72)
 
-    w("\n--- CLASAMENTE GRUPE ---\n")
+    w("\n--- GROUP STANDINGS ---\n")
     for g in sorted(std["group"].unique()):
         w(f"  Group {g}")
         sub = std[std["group"] == g].sort_values("position")
@@ -36,14 +36,14 @@ def main() -> None:
             w(
                 f"    {int(r['position'])}. {r['team']:<28} "
                 f"Pts {int(r['points']):>2}  "
-                f"MJ {int(r['played'])}  "
-                f"V/E/I {int(r['wins'])}/{int(r['draws'])}/{int(r['losses'])}  "
+                f"Games {int(r['played'])}  "
+                f"W/D/L {int(r['wins'])}/{int(r['draws'])}/{int(r['losses'])}  "
                 f"GF {int(r['goals_for']):>2} GA {int(r['goals_against']):>2}  "
                 f"GD {int(r['goal_diff']):+d}"
             )
         w("")
 
-    w("\n--- FAZA GRUPELOR (72 meciuri) ---\n")
+    w("\n--- GROUP STAGE (72 matches) ---\n")
     gs = df[df["stage"] == "Group Stage"].copy()
     for g in sorted(gs["group"].dropna().unique()):
         w(f"  Group {g}")
@@ -84,7 +84,7 @@ def main() -> None:
     fin = df[df["stage"] == "Final"]
     tp = df[df["stage"] == "Third Place"]
     if not fin.empty and not tp.empty:
-        w("--- PODIUM (din aceasta rulare) ---\n")
+        w("--- PODIUM (from this run) ---\n")
         w(f"  Champion:   {fin.iloc[0]['winner']}")
         r = fin.iloc[0]
         loser = r["away_team"] if r["winner"] == r["home_team"] else r["home_team"]

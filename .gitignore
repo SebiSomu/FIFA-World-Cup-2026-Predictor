@@ -40,7 +40,6 @@ Thumbs.db
 
 # Project outputs
 predictor/output/
-*.csv
 *.png
 *.jpg
 *.json

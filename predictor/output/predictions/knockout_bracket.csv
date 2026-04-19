@@ -1,33 +1,33 @@
 match_id,fifa_match_number,stage,group,home_team,away_team,predicted_home_score,predicted_away_score,score_detail,prob_home_win,prob_draw,prob_away_win,winner
-M073,73,Round of 32,,Czechia,Switzerland,1,0,0-0 (ET: +1-0),0.293,0.296,0.41,Czechia
-M074,74,Round of 32,,Germany,Mexico,3,2,3-2,0.715,0.17,0.115,Germany
-M075,75,Round of 32,,Japan,Scotland,0,1,0-1,0.258,0.251,0.491,Scotland
-M076,76,Round of 32,,Brazil,Netherlands,1,2,1-2,0.579,0.217,0.205,Netherlands
-M077,77,Round of 32,,Senegal,Uruguay,0,1,0-1,0.221,0.261,0.518,Uruguay
-M078,78,Round of 32,,Ecuador,France,2,3,2-3,0.189,0.216,0.596,France
-M079,79,Round of 32,,Korea Republic,Sweden,1,2,1-2,0.331,0.299,0.369,Sweden
-M080,80,Round of 32,,Croatia,Norway,1,1,1-1 (ET: +0-0) [PKs: 1-0],0.65,0.204,0.146,Croatia
-M081,81,Round of 32,,Australia,Canada,2,3,2-3,0.612,0.228,0.16,Canada
-M082,82,Round of 32,,Iran,Côte d'Ivoire,2,0,2-0,0.453,0.277,0.27,Iran
-M083,83,Round of 32,,Colombia,England,2,2,2-2 (ET: +0-0) [PKs: 0-1],0.2,0.251,0.549,England
-M084,84,Round of 32,,Saudi Arabia,Austria,1,6,1-6,0.172,0.215,0.613,Austria
-M085,85,Round of 32,,Bosnia and Herzegovina,Belgium,1,2,1-2,0.229,0.225,0.546,Belgium
-M086,86,Round of 32,,Argentina,Spain,2,2,2-2 (ET: +0-0) [PKs: 1-0],0.406,0.261,0.333,Argentina
-M087,87,Round of 32,,Portugal,Paraguay,0,0,0-0 (ET: +0-0) [PKs: 0-1],0.669,0.198,0.133,Paraguay
-M088,88,Round of 32,,United States,Egypt,1,0,1-0,0.483,0.259,0.257,United States
-M089,89,Round of 16,,Germany,Uruguay,2,1,2-1,0.604,0.208,0.188,Germany
-M090,90,Round of 16,,Czechia,Scotland,2,3,2-3,0.317,0.299,0.385,Scotland
-M091,91,Round of 16,,Netherlands,France,1,0,1-0,0.498,0.234,0.268,Netherlands
-M092,92,Round of 16,,Sweden,Croatia,2,1,1-1 (ET: +1-0),0.405,0.261,0.333,Sweden
-M093,93,Round of 16,,England,Austria,2,0,2-0,0.747,0.155,0.098,England
-M094,94,Round of 16,,Canada,Iran,0,1,0-1,0.336,0.302,0.362,Iran
-M095,95,Round of 16,,Argentina,United States,6,0,6-0,0.839,0.111,0.05,Argentina
-M096,96,Round of 16,,Belgium,Paraguay,3,2,3-2,0.604,0.21,0.186,Belgium
-M097,97,Quarter-Final,,Germany,Scotland,3,0,3-0,0.667,0.186,0.146,Germany
-M098,98,Quarter-Final,,England,Iran,4,1,4-1,0.82,0.129,0.051,England
-M099,99,Quarter-Final,,Netherlands,Sweden,3,2,3-2,0.624,0.201,0.175,Netherlands
-M100,100,Quarter-Final,,Argentina,Belgium,1,0,1-0,0.678,0.182,0.14,Argentina
-M101,101,Semi-Final,,Germany,England,3,2,3-2,0.415,0.245,0.34,Germany
-M102,102,Semi-Final,,Netherlands,Argentina,2,0,2-0,0.441,0.247,0.312,Netherlands
-M103,103,Third Place,,England,Argentina,3,0,3-0,0.535,0.24,0.225,England
-M104,104,Final,,Germany,Netherlands,4,1,4-1,0.533,0.22,0.247,Germany
+M073,73,Round of 32,,Czechia,Bosnia and Herzegovina,1,0,0-0 (ET: +1-0),0.378,0.3,0.322,Czechia
+M074,74,Round of 32,,Germany,Canada,4,0,4-0,0.801,0.13,0.069,Germany
+M075,75,Round of 32,,Japan,Morocco,0,0,0-0 (ET: +0-0) [PKs: 0-1],0.351,0.329,0.32,Morocco
+M076,76,Round of 32,,Brazil,Sweden,3,0,3-0,0.769,0.15,0.081,Brazil
+M077,77,Round of 32,,France,Paraguay,2,0,2-0,0.802,0.145,0.053,France
+M078,78,Round of 32,,Ecuador,Senegal,0,0,0-0 (ET: +0-0) [PKs: 0-1],0.423,0.324,0.253,Senegal
+M079,79,Round of 32,,Mexico,Netherlands,1,2,1-2,0.209,0.25,0.542,Netherlands
+M080,80,Round of 32,,Croatia,Uzbekistan,4,0,4-0,0.753,0.173,0.074,Croatia
+M081,81,Round of 32,,Australia,Norway,1,2,1-1 (ET: +0-1),0.262,0.251,0.487,Norway
+M082,82,Round of 32,,Iran,Côte d'Ivoire,1,2,1-2,0.472,0.273,0.255,Côte d'Ivoire
+M083,83,Round of 32,,Colombia,England,2,0,2-0,0.283,0.285,0.432,Colombia
+M084,84,Round of 32,,Spain,Austria,3,0,3-0,0.833,0.116,0.051,Spain
+M085,85,Round of 32,,Switzerland,Belgium,1,2,1-2,0.399,0.255,0.347,Belgium
+M086,86,Round of 32,,Argentina,Uruguay,1,1,1-1 (ET: +0-0) [PKs: 1-0],0.614,0.259,0.127,Argentina
+M087,87,Round of 32,,Portugal,Panama,5,0,5-0,0.947,0.041,0.012,Portugal
+M088,88,Round of 32,,Türkiye,Egypt,1,0,1-0,0.411,0.298,0.29,Türkiye
+M089,89,Round of 16,,Germany,France,1,2,1-2,0.316,0.242,0.442,France
+M090,90,Round of 16,,Czechia,Morocco,2,2,2-2 (ET: +0-0) [PKs: 0-1],0.288,0.296,0.416,Morocco
+M091,91,Round of 16,,Brazil,Senegal,1,0,1-0,0.672,0.212,0.117,Brazil
+M092,92,Round of 16,,Netherlands,Croatia,0,1,0-1,0.523,0.236,0.241,Croatia
+M093,93,Round of 16,,Colombia,Spain,0,3,0-3,0.205,0.235,0.559,Spain
+M094,94,Round of 16,,Norway,Côte d'Ivoire,0,1,0-1,0.54,0.258,0.202,Côte d'Ivoire
+M095,95,Round of 16,,Argentina,Türkiye,4,4,3-3 (ET: +1-1) [PKs: 1-0],0.529,0.261,0.21,Argentina
+M096,96,Round of 16,,Belgium,Portugal,3,1,3-1,0.335,0.259,0.406,Belgium
+M097,97,Quarter-Final,,France,Morocco,3,1,1-1 (ET: +2-0),0.591,0.273,0.136,France
+M098,98,Quarter-Final,,Spain,Côte d'Ivoire,1,0,1-0,0.65,0.223,0.127,Spain
+M099,99,Quarter-Final,,Brazil,Croatia,3,1,1-1 (ET: +2-0),0.572,0.239,0.188,Brazil
+M100,100,Quarter-Final,,Argentina,Belgium,1,1,1-1 (ET: +0-0) [PKs: 1-0],0.626,0.227,0.147,Argentina
+M101,101,Semi-Final,,France,Spain,3,2,3-2,0.336,0.264,0.401,France
+M102,102,Semi-Final,,Brazil,Argentina,0,3,0-3,0.353,0.294,0.353,Argentina
+M103,103,Third Place,,Spain,Brazil,2,0,2-0,0.616,0.22,0.163,Spain
+M104,104,Final,,France,Argentina,2,0,2-0,0.412,0.292,0.296,France

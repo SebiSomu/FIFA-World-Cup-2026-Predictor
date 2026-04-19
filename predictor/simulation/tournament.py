@@ -28,8 +28,23 @@ from simulation.wc2026_knockout_bracket import (
 from models.dixon_coles_hybrid_predictor import DixonColesHybridPredictor
 from features.elo_ratings import EloSystem
 
+
+def format_prob(p: float) -> float:
+    """
+    Format probability for display - clip to avoid 100% or 0%.
+    Football is never certain, so max is 0.95, min is 0.05.
+    """
+    return round(max(0.05, min(0.95, p)), 3)
+
 # Initialize ELO system for tournament ELO updates
 TOURNAMENT_ELO = EloSystem()
+
+# WC2026 host countries - only these get home advantage when playing at home
+WC2026_HOSTS = {'Mexico', 'United States', 'Canada'}
+
+def is_neutral_venue(home_team: str) -> bool:
+    """Determine if match is neutral (no home advantage)."""
+    return home_team not in WC2026_HOSTS
 
 _SIM_DIR = Path(__file__).resolve().parent
 _PREDICTOR_ROOT = _SIM_DIR.parent
@@ -119,8 +134,9 @@ class TeamState:
                 history.pop(0)
         
         # Update ELO ratings using the proper ELO system
+        # Only hosts get home advantage in ELO updates
         TOURNAMENT_ELO.update_ratings(home_team, away_team, home_goals, away_goals, 
-                                       'FIFA World Cup', is_neutral=True)
+                                       'FIFA World Cup', is_neutral=is_neutral_venue(home_team))
         
         # Sync with our internal elo dict
         self.elo[home_team] = TOURNAMENT_ELO.get_rating(home_team)
@@ -146,9 +162,10 @@ def simulate_group_stage(
 
         for home, away in pairs:
             # Use historical predictor (includes ELO automatically)
+            # Only hosts (Mexico/USA/Canada) get home advantage when playing at home
             result = predictor.predict_match(
                 home, away,
-                neutral=True,
+                neutral=is_neutral_venue(home),
             )
 
             h_goals = result['predicted_home']
@@ -169,9 +186,9 @@ def simulate_group_stage(
                 'away_team': away,
                 'predicted_home_score': h_goals,
                 'predicted_away_score': a_goals,
-                'prob_home_win': round(result['prob_home_win'], 3),
-                'prob_draw': round(result['prob_draw'], 3),
-                'prob_away_win': round(result['prob_away_win'], 3),
+                'prob_home_win': format_prob(result['prob_home_win']),
+                'prob_draw': format_prob(result['prob_draw']),
+                'prob_away_win': format_prob(result['prob_away_win']),
                 'winner': None,  # No winner in group stage (can draw)
             })
             match_id += 1
@@ -199,7 +216,7 @@ def simulate_knockout_fixtures(
     for home, away, mnum in fixtures:
         result = predictor.simulate_knockout(
             home, away,
-            neutral=True,
+            neutral=is_neutral_venue(home),
         )
 
         winner = result['winner']
