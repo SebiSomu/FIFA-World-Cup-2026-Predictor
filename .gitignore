@@ -22,6 +22,9 @@ share/python-wheels/
 *.egg
 MANIFEST
 
+# Allow frontend lib folder
+!frontend/src/lib/
+
 # Virtual Environment
 .venv/
 venv/
@@ -42,10 +45,20 @@ Thumbs.db
 predictor/output/
 *.png
 *.jpg
-*.json
 simulation_output.txt
 
 # Model files
 *.pkl
 *.joblib
 *.model
+
+# Django
+*.log
+local_settings.py
+db.sqlite3
+db.sqlite3-journal
+.env
+.env.local
+backend/static/
+backend/media/
+backend/*.log
