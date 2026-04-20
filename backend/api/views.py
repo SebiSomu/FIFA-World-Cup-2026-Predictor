@@ -185,3 +185,273 @@ def format_matches(matches):
             formatted_match[key] = to_python_type(value)
         formatted.append(formatted_match)
     return formatted
+
+
+# ── Database Query Views (Fast - no simulation) ──────────────────────────────
+
+from .models import SimulationRun, Match, GroupStanding, TeamStatistic
+
+
+def get_latest_simulation(request):
+    """
+    Get the latest simulation run from database.
+    Returns champion, runner-up, third place, and metadata.
+    """
+    try:
+        latest = SimulationRun.objects.prefetch_related(
+            'champion', 'runner_up', 'third_place'
+        ).first()
+        
+        if not latest:
+            return JsonResponse({
+                'status': 'error',
+                'message': 'No simulation found. Run: python manage.py run_simulation'
+            }, status=404)
+        
+        return JsonResponse({
+            'status': 'success',
+            'simulation_id': latest.id,
+            'created_at': latest.created_at.isoformat(),
+            'champion': latest.champion.name,
+            'runner_up': latest.runner_up.name,
+            'third_place': latest.third_place.name,
+            'total_matches': latest.total_matches,
+        })
+        
+    except Exception as e:
+        return JsonResponse({
+            'status': 'error',
+            'message': str(e)
+        }, status=500)
+
+
+def get_matches(request):
+    """
+    Get all matches from the latest simulation.
+    Optionally filter by stage via query parameter: ?stage=Group Stage
+    """
+    try:
+        latest = SimulationRun.objects.first()
+        
+        if not latest:
+            return JsonResponse({
+                'status': 'error',
+                'message': 'No simulation found. Run: python manage.py run_simulation'
+            }, status=404)
+        
+        # Optional stage filter
+        stage_filter = request.GET.get('stage')
+        matches_qs = latest.matches.select_related('home_team', 'away_team', 'winner')
+        
+        if stage_filter:
+            matches_qs = matches_qs.filter(stage=stage_filter)
+        
+        matches_data = []
+        for match in matches_qs:
+            matches_data.append({
+                'match_id': match.match_id,
+                'fifa_match_number': match.fifa_match_number,
+                'stage': match.stage,
+                'group': match.group,
+                'home_team': match.home_team.name,
+                'away_team': match.away_team.name,
+                'home_score': match.home_score,
+                'away_score': match.away_score,
+                'score_detail': match.score_detail,
+                'winner': match.winner.name if match.winner else None,
+                'prob_home_win': match.prob_home_win,
+                'prob_draw': match.prob_draw,
+                'prob_away_win': match.prob_away_win,
+            })
+        
+        return JsonResponse({
+            'status': 'success',
+            'simulation_id': latest.id,
+            'count': len(matches_data),
+            'matches': matches_data,
+        })
+        
+    except Exception as e:
+        return JsonResponse({
+            'status': 'error',
+            'message': str(e)
+        }, status=500)
+
+
+def get_standings(request):
+    """
+    Get group standings from the latest simulation.
+    Returns standings organized by group.
+    """
+    try:
+        latest = SimulationRun.objects.first()
+        
+        if not latest:
+            return JsonResponse({
+                'status': 'error',
+                'message': 'No simulation found. Run: python manage.py run_simulation'
+            }, status=404)
+        
+        standings_qs = latest.standings.select_related('team').all()
+        
+        # Organize by group
+        standings_by_group = {}
+        for standing in standings_qs:
+            group = standing.group
+            if group not in standings_by_group:
+                standings_by_group[group] = []
+            
+            standings_by_group[group].append({
+                'position': standing.position,
+                'team': standing.team.name,
+                'played': standing.played,
+                'wins': standing.wins,
+                'draws': standing.draws,
+                'losses': standing.losses,
+                'goals_for': standing.goals_for,
+                'goals_against': standing.goals_against,
+                'goal_diff': standing.goal_diff,
+                'points': standing.points,
+            })
+        
+        return JsonResponse({
+            'status': 'success',
+            'simulation_id': latest.id,
+            'standings': standings_by_group,
+        })
+        
+    except Exception as e:
+        return JsonResponse({
+            'status': 'error',
+            'message': str(e)
+        }, status=500)
+
+
+def get_team_stats(request):
+    """
+    Get team statistics from the latest simulation.
+    Returns aggregated stats for all teams.
+    """
+    try:
+        latest = SimulationRun.objects.first()
+        
+        if not latest:
+            return JsonResponse({
+                'status': 'error',
+                'message': 'No simulation found. Run: python manage.py run_simulation'
+            }, status=404)
+        
+        stats_qs = latest.team_stats.select_related('team').all()
+        
+        stats_data = []
+        for stat in stats_qs:
+            stats_data.append({
+                'team': stat.team.name,
+                'stage_reached': stat.stage_reached,
+                'matches_played': stat.matches_played,
+                'wins': stat.wins,
+                'draws': stat.draws,
+                'losses': stat.losses,
+                'goals_for': stat.goals_for,
+                'goals_against': stat.goals_against,
+                'goal_diff': stat.goal_diff,
+                'group': stat.group,
+                'group_position': stat.group_position,
+            })
+        
+        return JsonResponse({
+            'status': 'success',
+            'simulation_id': latest.id,
+            'count': len(stats_data),
+            'teams': stats_data,
+        })
+        
+    except Exception as e:
+        return JsonResponse({
+            'status': 'error',
+            'message': str(e)
+        }, status=500)
+
+
+def get_full_results(request):
+    """
+    Get complete results from latest simulation in one call.
+    Combines simulation metadata, matches, standings, and team stats.
+    """
+    try:
+        latest = SimulationRun.objects.prefetch_related(
+            'matches', 'standings', 'team_stats',
+            'champion', 'runner_up', 'third_place'
+        ).first()
+        
+        if not latest:
+            return JsonResponse({
+                'status': 'error',
+                'message': 'No simulation found. Run: python manage.py run_simulation'
+            }, status=404)
+        
+        # Build full response
+        response_data = {
+            'status': 'success',
+            'simulation': {
+                'id': latest.id,
+                'created_at': latest.created_at.isoformat(),
+                'champion': latest.champion.name,
+                'runner_up': latest.runner_up.name,
+                'third_place': latest.third_place.name,
+                'total_matches': latest.total_matches,
+            }
+        }
+        
+        # Add matches organized by stage
+        matches_by_stage = {}
+        for match in latest.matches.select_related('home_team', 'away_team', 'winner').all():
+            stage = match.stage
+            if stage not in matches_by_stage:
+                matches_by_stage[stage] = []
+            
+            matches_by_stage[stage].append({
+                'match_id': match.match_id,
+                'group': match.group,
+                'home_team': match.home_team.name,
+                'away_team': match.away_team.name,
+                'home_score': match.home_score,
+                'away_score': match.away_score,
+                'winner': match.winner.name if match.winner else None,
+                'score_detail': match.score_detail,
+                'prob_home_win': match.prob_home_win,
+                'prob_draw': match.prob_draw,
+                'prob_away_win': match.prob_away_win,
+            })
+        
+        response_data['matches_by_stage'] = matches_by_stage
+        
+        # Add standings
+        standings_by_group = {}
+        for standing in latest.standings.select_related('team').all():
+            group = standing.group
+            if group not in standings_by_group:
+                standings_by_group[group] = []
+            
+            standings_by_group[group].append({
+                'position': standing.position,
+                'team': standing.team.name,
+                'points': standing.points,
+                'played': standing.played,
+                'wins': standing.wins,
+                'draws': standing.draws,
+                'losses': standing.losses,
+                'goals_for': standing.goals_for,
+                'goals_against': standing.goals_against,
+                'goal_diff': standing.goal_diff,
+            })
+        
+        response_data['standings'] = standings_by_group
+        
+        return JsonResponse(response_data)
+        
+    except Exception as e:
+        return JsonResponse({
+            'status': 'error',
+            'message': str(e)
+        }, status=500)
