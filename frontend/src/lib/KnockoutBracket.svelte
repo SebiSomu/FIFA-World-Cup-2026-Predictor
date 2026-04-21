@@ -79,13 +79,13 @@
     justify-content: flex-start;
     align-items: stretch;
     min-width: max-content;
-    gap: 2rem;
+    gap: 1rem;
   }
   
   .bracket-column {
     display: flex;
     flex-direction: column;
-    min-width: 260px;
+    min-width: 170px;
     position: relative;
   }
   
@@ -93,7 +93,7 @@
   .bracket-column:not(:last-child)::after {
     content: '';
     position: absolute;
-    right: -1rem;
+    right: -0.5rem;
     top: 50px;
     bottom: 50px;
     width: 2px;
@@ -105,22 +105,22 @@
     flex-direction: column;
     justify-content: space-around;
     flex-grow: 1;
-    gap: 1rem;
+    gap: 0.5rem;
     padding: 0.5rem 0;
   }
   
   .matches-container.single {
-    max-width: 300px;
+    max-width: 220px;
   }
   
   .stage-title {
     text-align: center;
     color: #2c3e50;
     margin-top: 0;
-    margin-bottom: 1rem;
+    margin-bottom: 0.5rem;
     padding-bottom: 0.5rem;
     border-bottom: 2px solid #ecf0f1;
-    font-size: 1.1rem;
+    font-size: 1rem;
     position: sticky;
     top: 0;
     background: white;
@@ -130,7 +130,7 @@
   .finals-column {
     display: flex;
     flex-direction: column;
-    gap: 5rem;
+    gap: 2rem;
     justify-content: center;
     flex-grow: 1;
   }
@@ -147,7 +147,7 @@
     /* Optional: subtle animations when they appear */
     animation: fadeIn 0.5s ease-out forwards;
     width: 100%;
-    max-width: 300px;
+    max-width: 220px;
   }
   
   @keyframes fadeIn {

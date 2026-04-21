@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { getFlagUrl } from './flags';
   export let groupName: string;
   export let teams: any[];
 </script>
@@ -23,9 +24,16 @@
       </thead>
       <tbody>
         {#each teams as team, index}
-          <tr class:qualified={index < 2} class:third={index === 2}>
+          <tr class:qualified={index < 2} class:third-place-row={index === 2}>
             <td class="position">{index + 1}</td>
-            <td class="team-name">{team.team}</td>
+            <td class="team-cell">
+              <div class="team-content">
+                {#if getFlagUrl(team.team)}
+                  <img src={getFlagUrl(team.team)} class="table-flag" alt={team.team} />
+                {/if}
+                <span class="team-name">{team.team}</span>
+              </div>
+            </td>
             <td>{team.played}</td>
             <td>{team.wins}</td>
             <td>{team.draws}</td>
@@ -80,8 +88,22 @@
     font-size: 0.75rem;
     letter-spacing: 0.5px;
   }
-  .team-name {
+  .team-cell {
     text-align: left;
+  }
+  .team-content {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  .table-flag {
+    width: 20px;
+    height: 14px;
+    object-fit: cover;
+    border-radius: 2px;
+    box-shadow: 0 0 2px rgba(0,0,0,0.2);
+  }
+  .team-name {
     font-weight: 600;
     white-space: nowrap;
     color: #2c3e50;
@@ -105,11 +127,12 @@
   .qualified .position {
     color: #2e7d32;
   }
-  .third td {
+  .third-place-row td {
     background-color: #fff3e0;
     border-bottom-color: #ffe0b2;
+    color: #2c3e50;
   }
-  .third .position {
+  .third-place-row .position {
     color: #ef6c00;
   }
 </style>
