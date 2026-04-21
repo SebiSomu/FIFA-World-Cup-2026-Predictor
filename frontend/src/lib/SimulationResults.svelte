@@ -1,6 +1,8 @@
 <script lang="ts">
-  import { onMount } from 'svelte';
   import '../app.css';
+  import GroupTable from './GroupTable.svelte';
+  import ThirdPlacedTable from './ThirdPlacedTable.svelte';
+  import KnockoutBracket from './KnockoutBracket.svelte';
 
   interface Match {
     match_id: string;
@@ -27,6 +29,7 @@
     goals_against: number;
     goal_diff: number;
     points: number;
+    group?: string;
   }
 
   interface Simulation {
@@ -46,21 +49,36 @@
   }
 
   let results: SimulationData | null = null;
-  let loading = true;
+  let loading = false;
   let error: string | null = null;
   let errorDetail: string | null = null;
-  let rawJson = '';
+  
+  // Progression state
+  let currentStageIndex = -1;
+  const stages = [
+    "Group Stage",
+    "Third-Placed Teams",
+    "Round of 32",
+    "Round of 16",
+    "Quarter-Final",
+    "Semi-Final",
+    "Third Place",
+    "Final",
+    "Champion"
+  ];
+  
+  $: visibleStages = stages.slice(2, currentStageIndex + 1);
 
   const API_URL = 'http://localhost:8000/api';
 
-  // Load data automatically on mount from database
-  async function loadFromDatabase() {
+  async function loadSimulation() {
     loading = true;
     error = null;
     errorDetail = null;
+    currentStageIndex = -1;
+    results = null;
 
     try {
-      console.log('Loading simulation data from database...');
       const response = await fetch(`${API_URL}/results/full/`);
       
       if (!response.ok) {
@@ -74,9 +92,16 @@
       }
       
       const data: SimulationData = await response.json();
-      console.log('Data loaded successfully:', data);
+      
+      // Inject group name into team records for third-placed calculation
+      for (const [groupName, teams] of Object.entries(data.standings)) {
+        for (const team of teams) {
+          team.group = groupName;
+        }
+      }
+      
       results = data;
-      rawJson = JSON.stringify(data, null, 2);
+      currentStageIndex = 0; // Show group stage immediately after loading
     } catch (e) {
       error = e instanceof Error ? e.message : 'Unknown error';
       errorDetail = 'Failed to load data - check if Django server is running on port 8000';
@@ -86,31 +111,54 @@
     }
   }
 
-  onMount(() => {
-    loadFromDatabase();
-  });
-
-  function getGroupMatches(group: string): Match[] {
-    if (!results) return [];
-    return results.matches_by_stage['Group Stage']?.filter(m => m.group === group) || [];
+  function nextStage() {
+    if (currentStageIndex < stages.length - 1) {
+      currentStageIndex++;
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
   }
 
-  function getKnockoutMatches(stage: string): Match[] {
+  function getThirdPlacedTeams(): TeamRecord[] {
     if (!results) return [];
-    return results.matches_by_stage[stage] || [];
+    let thirds: TeamRecord[] = [];
+    for (const teams of Object.values(results.standings)) {
+      if (teams.length >= 3) {
+        thirds.push(teams[2]); // 0-indexed, so 2 is 3rd place
+      }
+    }
+    return thirds;
   }
 
-  function formatDate(dateString: string): string {
-    return new Date(dateString).toLocaleString();
+  // Label formatting for the button
+  function getStageLabel(stageName: string) {
+    if (stageName === "Quarter-Final") return "Quarter-finals";
+    if (stageName === "Semi-Final") return "Semi-finals";
+    if (stageName === "Third Place") return "Third place final";
+    return stageName;
   }
 </script>
 
 <div class="simulation-container">
-  <h2>🏆 FIFA World Cup 2026 Predictor</h2>
+  <div class="header">
+    <h2>FIFA World Cup 2026 Predictor</h2>
+    {#if !results && !loading}
+      <button class="primary-button" on:click={loadSimulation}>
+        Load Simulation
+      </button>
+    {/if}
+    
+    {#if results && currentStageIndex < stages.length - 1}
+      <div class="controls">
+        <button class="next-button" on:click={nextStage}>
+          Next Stage ({getStageLabel(stages[currentStageIndex + 1])})
+        </button>
+      </div>
+    {/if}
+  </div>
 
   {#if error}
     <div class="error">
-      <strong>❌ Error:</strong>
+      <strong>Error:</strong>
       <pre>{error}</pre>
       {#if errorDetail}
         <p class="error-hint">{errorDetail}</p>
@@ -118,85 +166,205 @@
     </div>
   {/if}
 
-  {#if loading && !results}
+  {#if loading}
     <div class="loading">
-      <p>⏳ Loading simulation data from database...</p>
+      <p>Loading simulation data from database...</p>
+      <div class="spinner"></div>
     </div>
   {/if}
 
-  {#if results}
+  {#if results && currentStageIndex >= 0}
     <div class="results">
-      <h3>🏅 Final Results</h3>
-      <div class="podium">
-        <div class="champion">🥇 Champion: {results.simulation.champion}</div>
-        <div class="runner-up">🥈 Runner-up: {results.simulation.runner_up}</div>
-        <div class="third">🥉 Third place: {results.simulation.third_place}</div>
-      </div>
-
-      <h3>📊 Group Standings</h3>
-      {#each Object.entries(results.standings) as [group, teams]}
-        <div class="group">
-          <h4>Group {group}</h4>
-          <table>
-            <thead>
-              <tr>
-                <th>Team</th>
-                <th>P</th>
-                <th>W</th>
-                <th>D</th>
-                <th>L</th>
-                <th>GF</th>
-                <th>GA</th>
-                <th>GD</th>
-                <th>Pts</th>
-              </tr>
-            </thead>
-            <tbody>
-              {#each teams as team}
-                <tr>
-                  <td>{team.team}</td>
-                  <td>{team.played}</td>
-                  <td>{team.wins}</td>
-                  <td>{team.draws}</td>
-                  <td>{team.losses}</td>
-                  <td>{team.goals_for}</td>
-                  <td>{team.goals_against}</td>
-                  <td>{team.goal_diff}</td>
-                  <td><strong>{team.points}</strong></td>
-                </tr>
-              {/each}
-            </tbody>
-          </table>
-        </div>
-      {/each}
-
-      <h3>🎮 Knockout Stage Matches</h3>
-      {#each Object.entries(results.matches_by_stage).filter(([stage]) => stage !== 'Group Stage') as [stage, matches]}
-        <div class="stage">
-          <h4>{stage}</h4>
-          <div class="matches-grid">
-            {#each matches as match}
-              <div class="match-card">
-                <div class="match-teams">
-                  <span class="team" class:winner={match.winner === match.home_team}>
-                    {match.home_team}
-                  </span>
-                  <span class="score">{match.home_score} - {match.away_score}</span>
-                  <span class="team" class:winner={match.winner === match.away_team}>
-                    {match.away_team}
-                  </span>
-                </div>
-                {#if match.score_detail}
-                  <div class="match-detail">{match.score_detail}</div>
-                {/if}
-              </div>
+      <!-- Group Stage View -->
+      {#if currentStageIndex === 0}
+        <div class="stage-section fade-in">
+          <h3>Group Standings</h3>
+          <div class="groups-grid">
+            {#each Object.entries(results.standings) as [group, teams]}
+              <GroupTable groupName={group} {teams} />
             {/each}
           </div>
         </div>
-      {/each}
+      {/if}
 
-      <h3>📋 Full Data (JSON)</h3>
-      <pre class="json-output">{rawJson}</pre>
+      <!-- Third Placed Teams View -->
+      {#if currentStageIndex === 1}
+        <div class="stage-section fade-in">
+          <ThirdPlacedTable teams={getThirdPlacedTeams()} />
+        </div>
+      {/if}
+
+      <!-- Knockout Stage Bracket View -->
+      {#if currentStageIndex >= 2 && currentStageIndex <= 7}
+        <div class="stage-section fade-in">
+          <h3>Knockout Stage</h3>
+          <KnockoutBracket 
+            matchesByStage={results.matches_by_stage} 
+            {visibleStages} 
+          />
+        </div>
+      {/if}
+
+      <!-- Champion View -->
+      {#if currentStageIndex === 8}
+        <div class="stage-section fade-in final-results">
+          <h3>World Cup Champion</h3>
+          <div class="champion-card-container">
+            <div class="champion-card">
+              <span class="place-label">Winner</span>
+              <span class="team-name">{results.simulation.champion}</span>
+            </div>
+          </div>
+        </div>
+      {/if}
     </div>
   {/if}
 </div>
+
+<style>
+  .header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+    padding-bottom: 1rem;
+    border-bottom: 2px solid #ecf0f1;
+    flex-wrap: wrap;
+    gap: 1rem;
+  }
+  
+  h2 {
+    margin: 0;
+    color: #2c3e50;
+    font-size: 1.8rem;
+  }
+  
+  .primary-button, .next-button {
+    padding: 0.75rem 1.5rem;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    background-color: #3498db;
+    color: white;
+    box-shadow: 0 4px 6px rgba(52, 152, 219, 0.2);
+  }
+  
+  .primary-button:hover, .next-button:hover {
+    background-color: #2980b9;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 8px rgba(52, 152, 219, 0.3);
+  }
+  
+  .next-button {
+    background-color: #2ecc71;
+    box-shadow: 0 4px 6px rgba(46, 204, 113, 0.2);
+  }
+  
+  .next-button:hover {
+    background-color: #27ae60;
+    box-shadow: 0 6px 8px rgba(46, 204, 113, 0.3);
+  }
+  
+  .controls {
+    display: flex;
+    gap: 1rem;
+  }
+
+  .stage-section {
+    margin-bottom: 3rem;
+  }
+  
+  h3 {
+    color: #2c3e50;
+    font-size: 1.5rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .groups-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(500px, 1fr));
+    gap: 1.5rem;
+  }
+  
+  .fade-in {
+    animation: fadeInStage 0.6s ease-out forwards;
+  }
+  
+  @keyframes fadeInStage {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .spinner {
+    width: 40px;
+    height: 40px;
+    border: 4px solid rgba(52, 152, 219, 0.2);
+    border-top: 4px solid #3498db;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin: 1rem auto;
+  }
+
+  @keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+
+  /* Champion Card Styles */
+  .champion-card-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-top: 2rem;
+  }
+
+  .champion-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 3rem 5rem;
+    border-radius: 16px;
+    background: linear-gradient(135deg, #f1c40f, #f39c12);
+    color: white;
+    box-shadow: 0 10px 20px rgba(243, 156, 18, 0.3);
+    animation: pulse 2s infinite;
+  }
+
+  @keyframes pulse {
+    0% { transform: scale(1); box-shadow: 0 10px 20px rgba(243, 156, 18, 0.3); }
+    50% { transform: scale(1.02); box-shadow: 0 15px 30px rgba(243, 156, 18, 0.4); }
+    100% { transform: scale(1); box-shadow: 0 10px 20px rgba(243, 156, 18, 0.3); }
+  }
+
+  .place-label {
+    font-size: 1.2rem;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    opacity: 0.9;
+    margin-bottom: 1rem;
+    font-weight: 600;
+  }
+
+  .team-name {
+    font-size: 3rem;
+    font-weight: 800;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+    text-align: center;
+  }
+
+  @media (max-width: 768px) {
+    .groups-grid {
+      grid-template-columns: 1fr;
+    }
+    .champion-card {
+      padding: 2rem 3rem;
+    }
+    .team-name {
+      font-size: 2rem;
+    }
+  }
+</style>
