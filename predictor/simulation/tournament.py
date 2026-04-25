@@ -253,12 +253,19 @@ def simulate_knockout_fixtures(
 
 # ── Full Tournament ───────────────────────────────────────────────────────────
 
-def run_tournament(base_elo: Dict[str, float] = None) -> Dict:
+def run_tournament(base_elo: Dict[str, float] = None, simulation_type: str = 'modern') -> Dict:
     """
     Run the complete WC2026 simulation.
+
+    Args:
+        base_elo: Optional dictionary of team ELO ratings
+        simulation_type: 'modern' for recency-weighted, 'all_time' for equal weights
+
     Returns dict with all match results and standings.
     """
     np.random.seed(42)  # reproducibility
+
+    use_equal_weights = (simulation_type == 'all_time')
 
     predictor = DixonColesHybridPredictor()  # Dixon-Coles hybrid predictor
     results_path = _resolve_results_csv()
@@ -269,7 +276,7 @@ def run_tournament(base_elo: Dict[str, float] = None) -> Dict:
         matches_df = matches_df[
             matches_df["date"].dt.year >= DixonColesHybridPredictor.FIT_MIN_YEAR
         ]
-        predictor.fit(matches_df)
+        predictor.fit(matches_df, use_equal_weights=use_equal_weights)
     
     state = TeamState(base_elo)  # Uses external eloratings.net by default
 
@@ -339,6 +346,7 @@ def run_tournament(base_elo: Dict[str, float] = None) -> Dict:
         'champion': champion,
         'runner_up': runner_up,
         'third_place': third_place,
+        'simulation_type': simulation_type,
     }
 
 

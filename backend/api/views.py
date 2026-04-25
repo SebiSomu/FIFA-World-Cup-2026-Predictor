@@ -192,13 +192,24 @@ def format_matches(matches):
 from .models import SimulationRun, Match, GroupStanding, TeamStatistic
 
 
+def _get_simulation_type(request):
+    """Extract simulation type from request, defaulting to 'modern'."""
+    sim_type = request.GET.get('type', 'modern')
+    if sim_type not in ['modern', 'all_time']:
+        sim_type = 'modern'
+    return sim_type
+
+
 def get_latest_simulation(request):
     """
     Get the latest simulation run from database.
     Returns champion, runner-up, third place, and metadata.
     """
     try:
-        latest = SimulationRun.objects.prefetch_related(
+        sim_type = _get_simulation_type(request)
+        latest = SimulationRun.objects.filter(
+            simulation_type=sim_type
+        ).prefetch_related(
             'champion', 'runner_up', 'third_place'
         ).first()
         
@@ -216,6 +227,7 @@ def get_latest_simulation(request):
             'runner_up': latest.runner_up.name,
             'third_place': latest.third_place.name,
             'total_matches': latest.total_matches,
+            'simulation_type': latest.simulation_type,
         })
         
     except Exception as e:
@@ -229,9 +241,11 @@ def get_matches(request):
     """
     Get all matches from the latest simulation.
     Optionally filter by stage via query parameter: ?stage=Group Stage
+    Filter by simulation type via: ?type=modern or ?type=all_time
     """
     try:
-        latest = SimulationRun.objects.first()
+        sim_type = _get_simulation_type(request)
+        latest = SimulationRun.objects.filter(simulation_type=sim_type).first()
         
         if not latest:
             return JsonResponse({
@@ -267,6 +281,7 @@ def get_matches(request):
         return JsonResponse({
             'status': 'success',
             'simulation_id': latest.id,
+            'simulation_type': latest.simulation_type,
             'count': len(matches_data),
             'matches': matches_data,
         })
@@ -282,9 +297,11 @@ def get_standings(request):
     """
     Get group standings from the latest simulation.
     Returns standings organized by group.
+    Filter by simulation type via: ?type=modern or ?type=all_time
     """
     try:
-        latest = SimulationRun.objects.first()
+        sim_type = _get_simulation_type(request)
+        latest = SimulationRun.objects.filter(simulation_type=sim_type).first()
         
         if not latest:
             return JsonResponse({
@@ -317,6 +334,7 @@ def get_standings(request):
         return JsonResponse({
             'status': 'success',
             'simulation_id': latest.id,
+            'simulation_type': latest.simulation_type,
             'standings': standings_by_group,
         })
         
@@ -331,9 +349,11 @@ def get_team_stats(request):
     """
     Get team statistics from the latest simulation.
     Returns aggregated stats for all teams.
+    Filter by simulation type via: ?type=modern or ?type=all_time
     """
     try:
-        latest = SimulationRun.objects.first()
+        sim_type = _get_simulation_type(request)
+        latest = SimulationRun.objects.filter(simulation_type=sim_type).first()
         
         if not latest:
             return JsonResponse({
@@ -362,6 +382,7 @@ def get_team_stats(request):
         return JsonResponse({
             'status': 'success',
             'simulation_id': latest.id,
+            'simulation_type': latest.simulation_type,
             'count': len(stats_data),
             'teams': stats_data,
         })
@@ -377,9 +398,13 @@ def get_full_results(request):
     """
     Get complete results from latest simulation in one call.
     Combines simulation metadata, matches, standings, and team stats.
+    Filter by simulation type via: ?type=modern or ?type=all_time
     """
     try:
-        latest = SimulationRun.objects.prefetch_related(
+        sim_type = _get_simulation_type(request)
+        latest = SimulationRun.objects.filter(
+            simulation_type=sim_type
+        ).prefetch_related(
             'matches', 'standings', 'team_stats',
             'champion', 'runner_up', 'third_place'
         ).first()
@@ -400,6 +425,7 @@ def get_full_results(request):
                 'runner_up': latest.runner_up.name,
                 'third_place': latest.third_place.name,
                 'total_matches': latest.total_matches,
+                'simulation_type': latest.simulation_type,
             }
         }
         

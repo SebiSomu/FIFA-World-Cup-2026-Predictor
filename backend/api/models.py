@@ -16,17 +16,32 @@ class Team(models.Model):
 
 class SimulationRun(models.Model):
     """Stores metadata about a simulation run."""
+    SIMULATION_TYPES = [
+        ('modern', 'Modern (Recency Weighted)'),
+        ('all_time', 'All-Time (Equal Weights)'),
+    ]
+
     created_at = models.DateTimeField(auto_now_add=True)
     champion = models.ForeignKey(Team, on_delete=models.CASCADE, related_name='championships')
     runner_up = models.ForeignKey(Team, on_delete=models.CASCADE, related_name='runner_up_placements')
     third_place = models.ForeignKey(Team, on_delete=models.CASCADE, related_name='third_place_placements')
     total_matches = models.IntegerField(default=104)
+    simulation_type = models.CharField(
+        max_length=20,
+        choices=SIMULATION_TYPES,
+        default='modern',
+        db_index=True,
+        help_text='Type of simulation: modern (recency weighted) or all_time (equal weights for all years)'
+    )
 
     class Meta:
         ordering = ['-created_at']
+        indexes = [
+            models.Index(fields=['simulation_type', '-created_at']),
+        ]
 
     def __str__(self):
-        return f"Simulation {self.id} - {self.champion.name} (champion) at {self.created_at}"
+        return f"Simulation {self.id} ({self.simulation_type}) - {self.champion.name} (champion) at {self.created_at}"
 
 
 class Match(models.Model):

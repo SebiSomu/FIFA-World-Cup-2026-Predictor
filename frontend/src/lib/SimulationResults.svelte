@@ -41,7 +41,10 @@
     runner_up: string;
     third_place: string;
     total_matches: number;
+    simulation_type: 'modern' | 'all_time';
   }
+
+  type SimulationType = 'modern' | 'all_time';
 
   interface SimulationData {
     status: string;
@@ -54,6 +57,7 @@
   let loading = false;
   let error: string | null = null;
   let errorDetail: string | null = null;
+  let selectedType: SimulationType = 'modern';
 
   // Progression state
   let currentStageIndex = -1;
@@ -81,7 +85,7 @@
     results = null;
 
     try {
-      const response = await fetch(`${API_URL}/results/full/`);
+      const response = await fetch(`${API_URL}/results/full/?type=${selectedType}`);
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
@@ -161,10 +165,31 @@
 <div class="simulation-container">
   <div class="header">
     <h2>FIFA World Cup 2026 Predictor</h2>
-    {#if !results && !loading}
-      <button class="primary-button" on:click={loadSimulation}>
-        Load Simulation
-      </button>
+      {#if !results && !loading}
+      <div class="controls-row">
+        <div class="simulation-toggle">
+          <span class="toggle-label">Simulation:</span>
+          <div class="toggle-buttons">
+            <button
+              class="toggle-btn"
+              class:active={selectedType === 'modern'}
+              on:click={() => selectedType = 'modern'}
+            >
+              Modern
+            </button>
+            <button
+              class="toggle-btn"
+              class:active={selectedType === 'all_time'}
+              on:click={() => selectedType = 'all_time'}
+            >
+              All-Time
+            </button>
+          </div>
+        </div>
+        <button class="primary-button" on:click={loadSimulation}>
+          Load Simulation
+        </button>
+      </div>
     {/if}
 
     {#if results && currentStageIndex < stages.length - 1}
@@ -194,6 +219,9 @@
   {/if}
 
   {#if results && currentStageIndex >= 0}
+    <div class="simulation-badge" class:modern={results.simulation.simulation_type === 'modern'} class:all-time={results.simulation.simulation_type === 'all_time'}>
+      {results.simulation.simulation_type === 'modern' ? 'Modern (recency weighted)' : 'All-Time (equal weights for all years)'}
+    </div>
     <div class="results">
       <!-- Group Stage View -->
       {#if currentStageIndex === 0}
@@ -300,6 +328,75 @@
   .controls {
     display: flex;
     gap: 1rem;
+  }
+
+  .controls-row {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+  }
+
+  .simulation-toggle {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .toggle-label {
+    font-size: 0.9rem;
+    color: #666;
+    font-weight: 500;
+  }
+
+  .toggle-buttons {
+    display: flex;
+    background: #ecf0f1;
+    border-radius: 8px;
+    padding: 3px;
+    gap: 3px;
+  }
+
+  .toggle-btn {
+    padding: 0.5rem 1rem;
+    border: none;
+    border-radius: 6px;
+    background: transparent;
+    color: #666;
+    font-size: 0.9rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .toggle-btn:hover {
+    color: #333;
+  }
+
+  .toggle-btn.active {
+    background: white;
+    color: #2c3e50;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+
+  .simulation-badge {
+    display: inline-block;
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    margin-bottom: 1.5rem;
+    text-align: center;
+  }
+
+  .simulation-badge.modern {
+    background: linear-gradient(135deg, #3498db, #2980b9);
+    color: white;
+  }
+
+  .simulation-badge.all-time {
+    background: linear-gradient(135deg, #9b59b6, #8e44ad);
+    color: white;
   }
 
   .stage-section {

@@ -67,12 +67,14 @@ class DixonColesHybridPredictor:
         
         print("WARNING: Could not find ELO ratings file!")
     
-    def fit(self, matches_df: pd.DataFrame = None):
+    def fit(self, matches_df: pd.DataFrame = None, use_equal_weights: bool = False):
         """
         Fit the Dixon-Coles model on historical data.
-        
+
         Args:
             matches_df: Historical matches. If None, loads from default location.
+            use_equal_weights: If True, all matches have equal recency weight (1.0)
+                              regardless of year. Used for 'all_time' simulations.
         """
         if matches_df is None:
             # Try multiple paths for results.csv
@@ -81,18 +83,18 @@ class DixonColesHybridPredictor:
                 Path('../data/results.csv'),
                 Path(__file__).resolve().parent.parent / 'data' / 'results.csv',
             ]
-            
+
             results_path = None
             for p in possible_paths:
                 if p.exists():
                     results_path = p
                     break
-            
+
             if results_path is None:
                 print("No historical data found, using default parameters")
                 self.fitted = True
                 return False
-                
+
             matches_df = pd.read_csv(results_path)
             matches_df['date'] = pd.to_datetime(matches_df['date'])
             matches_df = matches_df[matches_df['date'].dt.year >= self.FIT_MIN_YEAR]
@@ -121,12 +123,18 @@ class DixonColesHybridPredictor:
                 f"year >= {self.FIT_MIN_YEAR})"
             )
 
-        print(f"Fitting Dixon-Coles on {len(matches_df)} matches...")
-        
+        weight_type = "equal weights (all-time)" if use_equal_weights else "recency weighted"
+        print(f"Fitting Dixon-Coles on {len(matches_df)} matches ({weight_type})...")
+
         current_year = 2026
-        matches_df["recency_weight"] = matches_df["date"].apply(
-            lambda d: np.exp(-RECENCY_LAMBDA * (current_year - d.year))
-        )
+        if use_equal_weights:
+            # All-time mode: equal recency weight for all matches
+            matches_df["recency_weight"] = 1.0
+        else:
+            # Modern mode: exponential decay based on year
+            matches_df["recency_weight"] = matches_df["date"].apply(
+                lambda d: np.exp(-RECENCY_LAMBDA * (current_year - d.year))
+            )
 
         if "tournament" in matches_df.columns:
             tcol = matches_df["tournament"].fillna("Friendly")
@@ -135,16 +143,16 @@ class DixonColesHybridPredictor:
         matches_df["comp_weight"] = tcol.map(
             lambda x: COMPETITION_WEIGHTS.get(str(x), 1.5)
         )
-        
+
         # Combined weights
         matches_df['weight'] = matches_df['recency_weight'] * matches_df['comp_weight']
-        
+
         # Fit Dixon-Coles
         success = self.dc_model.fit(
             matches_df, recency_weights=matches_df["weight"].values
         )
         self.fitted = success
-        
+
         return success
     
     def predict_match(self, home_team: str, away_team: str, neutral: bool = True) -> Dict:

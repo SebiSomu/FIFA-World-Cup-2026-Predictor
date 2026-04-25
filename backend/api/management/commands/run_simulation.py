@@ -1,6 +1,6 @@
 """
 Management command to run WC2026 simulation and save results to database.
-Usage: python manage.py run_simulation
+Usage: python manage.py run_simulation [--type modern|all_time]
 """
 import sys
 from pathlib import Path
@@ -19,11 +19,21 @@ from simulation.wc2026_groups import GROUPS
 class Command(BaseCommand):
     help = 'Run WC2026 simulation and save results to database'
 
+    def add_arguments(self, parser):
+        parser.add_argument(
+            '--type',
+            type=str,
+            choices=['modern', 'all_time'],
+            default='modern',
+            help='Type of simulation: modern (recency weighted) or all_time (equal weights for all years)'
+        )
+
     def handle(self, *args, **options):
-        self.stdout.write(self.style.NOTICE('Running WC2026 simulation...'))
-        
+        sim_type = options['type']
+        self.stdout.write(self.style.NOTICE(f'Running WC2026 simulation (type: {sim_type})...'))
+
         # Run simulation
-        results = run_tournament()
+        results = run_tournament(simulation_type=sim_type)
         
         # Get or create all teams in master Team table
         team_objects = self._get_or_create_teams()
@@ -33,11 +43,12 @@ class Command(BaseCommand):
             champion=team_objects[results['champion']],
             runner_up=team_objects[results['runner_up']],
             third_place=team_objects[results['third_place']],
-            total_matches=len(results['all_results'])
+            total_matches=len(results['all_results']),
+            simulation_type=sim_type
         )
-        
+
         self.stdout.write(self.style.SUCCESS(
-            f'Created SimulationRun: {sim_run.champion.name} champion at {sim_run.created_at}'
+            f'Created SimulationRun ({sim_type}): {sim_run.champion.name} champion at {sim_run.created_at}'
         ))
         
         # Save all matches
