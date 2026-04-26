@@ -431,13 +431,23 @@ def get_full_results(request):
         
         # Add matches organized by stage
         matches_by_stage = {}
-        for match in latest.matches.select_related('home_team', 'away_team', 'winner').all():
+        IDEAL_ORDER = {
+            'Round of 32': [74, 77, 73, 75, 83, 84, 81, 82, 76, 78, 79, 80, 86, 88, 85, 87],
+            'Round of 16': [89, 90, 93, 94, 91, 92, 95, 96],
+            'Quarter-Final': [97, 98, 99, 100],
+            'Semi-Final': [101, 102],
+        }
+
+        all_matches = list(latest.matches.select_related('home_team', 'away_team', 'winner').all())
+        
+        for match in all_matches:
             stage = match.stage
             if stage not in matches_by_stage:
                 matches_by_stage[stage] = []
             
             matches_by_stage[stage].append({
                 'match_id': match.match_id,
+                'fifa_match_number': match.fifa_match_number,
                 'group': match.group,
                 'home_team': match.home_team.name,
                 'away_team': match.away_team.name,
@@ -449,6 +459,14 @@ def get_full_results(request):
                 'prob_draw': match.prob_draw,
                 'prob_away_win': match.prob_away_win,
             })
+
+        # Apply ideal sorting for knockout stages
+        for stage, order in IDEAL_ORDER.items():
+            if stage in matches_by_stage:
+                # Sort by the index in the ideal order list
+                matches_by_stage[stage].sort(
+                    key=lambda x: order.index(x['fifa_match_number']) if x['fifa_match_number'] in order else 999
+                )
         
         response_data['matches_by_stage'] = matches_by_stage
         

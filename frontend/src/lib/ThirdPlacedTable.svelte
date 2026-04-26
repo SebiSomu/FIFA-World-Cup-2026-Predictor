@@ -1,15 +1,15 @@
 <script lang="ts">
   import { getFlagUrl } from './flags';
-  export let teams: any[];
+  let { teams } = $props<{ teams: any[] }>();
   
-  $: sortedTeams = [...teams].sort((a, b) => {
+  let sortedTeams = $derived([...teams].sort((a, b) => {
     if (b.points !== a.points) return b.points - a.points;
     if (b.goal_diff !== a.goal_diff) return b.goal_diff - a.goal_diff;
     return b.goals_for - a.goals_for;
-  });
+  }));
 </script>
 
-<div class="third-placed-container">
+<div class="third-placed-container premium-card">
   <h4>Ranking of 3rd Placed Teams</h4>
   <p class="subtitle">Top 8 qualify for the Round of 32</p>
   
@@ -24,15 +24,13 @@
           <th>W</th>
           <th>D</th>
           <th>L</th>
-          <th>GF</th>
-          <th>GA</th>
           <th>GD</th>
           <th>Pts</th>
         </tr>
       </thead>
       <tbody>
         {#each sortedTeams as team, index}
-          <tr class:qualified={index < 8}>
+          <tr class={index < 8 ? 'qualified' : ''}>
             <td class="position">{index + 1}</td>
             <td class="group">{team.group}</td>
             <td class="team-cell">
@@ -47,9 +45,9 @@
             <td>{team.wins}</td>
             <td>{team.draws}</td>
             <td>{team.losses}</td>
-            <td>{team.goals_for}</td>
-            <td>{team.goals_against}</td>
-            <td>{team.goal_diff}</td>
+            <td class={team.goal_diff > 0 ? 'positive' : team.goal_diff < 0 ? 'negative' : ''}>
+              {team.goal_diff > 0 ? `+${team.goal_diff}` : team.goal_diff}
+            </td>
             <td class="points"><strong>{team.points}</strong></td>
           </tr>
         {/each}
@@ -60,96 +58,115 @@
 
 <style>
   .third-placed-container {
-    background: white;
-    border-radius: 12px;
-    padding: 1.5rem;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+    padding: 1rem;
     margin-bottom: 2rem;
-    border: 1px solid #e1e4e8;
+    background: rgba(255, 255, 255, 0.01);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 4px;
   }
+
   h4 {
     margin-top: 0;
-    margin-bottom: 0.25rem;
-    color: #2c3e50;
+    margin-bottom: 0.5rem;
+    color: #fff;
     font-size: 1.2rem;
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: 1px;
   }
+
   .subtitle {
-    color: #7f8c8d;
-    font-size: 0.9rem;
-    margin-bottom: 1rem;
-    border-bottom: 2px solid #ecf0f1;
-    padding-bottom: 0.5rem;
+    color: var(--color-text-muted);
+    font-size: 0.85rem;
+    margin-bottom: 1.5rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    padding-bottom: 1rem;
+    font-weight: 600;
   }
+
   .table-responsive {
     overflow-x: auto;
   }
+
   table {
     width: 100%;
     border-collapse: collapse;
-    font-size: 0.9rem;
+    font-size: 0.85rem;
     min-width: 500px;
   }
+
   th, td {
-    padding: 0.5rem 0.5rem;
+    padding: 0.6rem 0.4rem;
     text-align: center;
-    border-bottom: 1px solid #ecf0f1;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.03);
   }
+
   th {
-    background-color: #2c3e50;
-    color: #ffffff;
-    font-weight: 700;
+    color: var(--color-text-muted);
+    font-weight: 800;
     text-transform: uppercase;
-    font-size: 0.75rem;
-    letter-spacing: 0.5px;
+    font-size: 0.65rem;
+    letter-spacing: 1px;
   }
+
   .team-cell {
     text-align: left;
   }
+
   .team-content {
     display: flex;
     align-items: center;
-    gap: 0.5rem;
+    gap: 0.6rem;
   }
+
   .table-flag {
     width: 20px;
-    height: 14px;
+    height: 13px;
     object-fit: cover;
-    border-radius: 2px;
-    box-shadow: 0 0 2px rgba(0,0,0,0.2);
+    border-radius: 1px;
+    opacity: 0.8;
   }
+
   .team-name {
-    font-weight: 600;
+    font-weight: 700;
     white-space: nowrap;
-    color: #2c3e50;
+    color: #eee;
   }
+
   .position {
-    color: #2c3e50;
-    font-weight: 800;
+    color: #444;
+    font-weight: 900;
+    font-size: 0.9rem;
+  }
+
+  .group {
+    font-weight: 900;
+    color: var(--color-accent-blue);
+    opacity: 0.8;
+  }
+
+  .points {
+    color: #fff;
     font-size: 1rem;
   }
-  .group {
-    font-weight: 800;
-    color: #34495e;
-  }
-  .points {
-    color: #2c3e50;
-    font-size: 1.1rem;
-  }
+
   tr:hover {
-    background-color: #f0f2f5;
+    background: rgba(255, 255, 255, 0.02);
   }
-  .qualified td {
-    background-color: #e8f5e9;
-    border-bottom-color: #c8e6c9;
+
+  .qualified .team-name {
+    color: var(--color-accent-green);
   }
-  .qualified .position {
-    color: #2e7d32;
+
+  tr:not(.qualified) {
+    opacity: 0.3;
   }
-  tr:not(.qualified) td {
-    opacity: 0.7;
-  }
+
   tr:not(.qualified) .team-name {
     text-decoration: line-through;
-    color: #c0392b;
+    color: var(--color-accent-magenta);
   }
+
+  .positive { color: var(--color-accent-green); opacity: 0.8; }
+  .negative { color: var(--color-accent-magenta); opacity: 0.8; }
 </style>

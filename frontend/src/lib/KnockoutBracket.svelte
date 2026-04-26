@@ -1,8 +1,16 @@
 <script lang="ts">
   import MatchResult from './MatchResult.svelte';
+  import { fade, fly } from 'svelte/transition';
   
-  export let matchesByStage: Record<string, any[]>;
-  export let visibleStages: string[];
+  let { 
+    matchesByStage, 
+    visibleStages, 
+    showResultsFor = null 
+  } = $props<{
+    matchesByStage: Record<string, any[]>;
+    visibleStages: string[];
+    showResultsFor?: string | null;
+  }>();
   
   // Stages that have their own columns
   const standardStages = [
@@ -13,16 +21,21 @@
   ];
 </script>
 
-<div class="bracket-wrapper">
+<div class="bracket-wrapper" in:fade>
   <div class="bracket">
     {#each standardStages as stage}
       {#if visibleStages.includes(stage)}
-        <div class="bracket-column">
-          <h4 class="stage-title">{stage === 'Quarter-Final' ? 'Quarter-finals' : stage === 'Semi-Final' ? 'Semi-finals' : stage}</h4>
+        <div class="bracket-column" in:fly={{ x: 20, duration: 500 }}>
+          <h4 class="stage-title">
+            {stage === 'Quarter-Final' ? 'Quarter-finals' : stage === 'Semi-Final' ? 'Semi-finals' : stage}
+          </h4>
           <div class="matches-container">
             {#each (matchesByStage[stage] || []) as match}
               <div class="match-wrapper">
-                <MatchResult {...match} />
+                <MatchResult 
+                  {...match} 
+                  hideResults={stage === showResultsFor ? false : (visibleStages.indexOf(stage) > visibleStages.indexOf(showResultsFor || '') ? true : false)} 
+                />
               </div>
             {/each}
           </div>
@@ -32,14 +45,17 @@
 
     <!-- Combined column for Final and Third Place -->
     {#if visibleStages.includes("Final") || visibleStages.includes("Third Place")}
-      <div class="bracket-column finals-column">
+      <div class="bracket-column finals-column" in:fly={{ x: 20, duration: 500 }}>
         {#if visibleStages.includes("Final")}
           <div class="final-section">
             <h4 class="stage-title">Final</h4>
             <div class="matches-container">
               {#each (matchesByStage["Final"] || []) as match}
                 <div class="match-wrapper">
-                  <MatchResult {...match} />
+                  <MatchResult 
+                    {...match} 
+                    hideResults={showResultsFor !== "Final" && showResultsFor !== "Champion"}
+                  />
                 </div>
               {/each}
             </div>
@@ -52,7 +68,10 @@
             <div class="matches-container">
               {#each (matchesByStage["Third Place"] || []) as match}
                 <div class="match-wrapper">
-                  <MatchResult {...match} />
+                  <MatchResult 
+                    {...match} 
+                    hideResults={showResultsFor !== "Third Place" && showResultsFor !== "Final" && showResultsFor !== "Champion"}
+                  />
                 </div>
               {/each}
             </div>
@@ -66,12 +85,13 @@
 <style>
   .bracket-wrapper {
     overflow-x: auto;
-    padding: 1.5rem;
-    background: white;
-    border-radius: 12px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
-    border: 1px solid #e1e4e8;
+    padding: 3rem 2rem;
+    background: rgba(255, 255, 255, 0.01);
+    border-radius: 4px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
     margin-bottom: 2rem;
+    scrollbar-width: thin;
+    scrollbar-color: var(--color-accent-blue) transparent;
   }
   
   .bracket {
@@ -79,25 +99,14 @@
     justify-content: flex-start;
     align-items: stretch;
     min-width: max-content;
-    gap: 1rem;
+    gap: 4rem;
   }
   
   .bracket-column {
     display: flex;
     flex-direction: column;
-    min-width: 170px;
+    min-width: 260px;
     position: relative;
-  }
-  
-  /* Connector lines for bracket visual */
-  .bracket-column:not(:last-child)::after {
-    content: '';
-    position: absolute;
-    right: -0.5rem;
-    top: 50px;
-    bottom: 50px;
-    width: 2px;
-    background-color: transparent; /* Can add lines if desired */
   }
   
   .matches-container {
@@ -105,32 +114,28 @@
     flex-direction: column;
     justify-content: space-around;
     flex-grow: 1;
-    gap: 0.5rem;
-    padding: 0.5rem 0;
-  }
-  
-  .matches-container.single {
-    max-width: 220px;
+    gap: 2rem;
+    padding: 2rem 0;
   }
   
   .stage-title {
-    text-align: center;
-    color: #2c3e50;
+    text-align: left;
+    color: #fff;
     margin-top: 0;
-    margin-bottom: 0.5rem;
-    padding-bottom: 0.5rem;
-    border-bottom: 2px solid #ecf0f1;
-    font-size: 1rem;
-    position: sticky;
-    top: 0;
-    background: white;
-    z-index: 10;
+    margin-bottom: 2rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    font-size: 0.9rem;
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    opacity: 0.6;
   }
   
   .finals-column {
     display: flex;
     flex-direction: column;
-    gap: 2rem;
+    gap: 4rem;
     justify-content: center;
     flex-grow: 1;
   }
@@ -139,19 +144,39 @@
     width: 100%;
     display: flex;
     flex-direction: column;
-    align-items: center;
+    align-items: flex-start;
   }
 
   .match-wrapper {
     position: relative;
-    /* Optional: subtle animations when they appear */
-    animation: fadeIn 0.5s ease-out forwards;
     width: 100%;
-    max-width: 220px;
+    max-width: 240px;
+    min-height: 120px; /* Consistent height for alignment */
+    display: flex;
+    align-items: center;
   }
-  
-  @keyframes fadeIn {
-    from { opacity: 0; transform: translateY(10px); }
-    to { opacity: 1; transform: translateY(0); }
+
+  .match-wrapper::after {
+    content: '';
+    position: absolute;
+    right: -4rem;
+    width: 4rem;
+    height: 1px;
+    background: rgba(255, 255, 255, 0.05);
+  }
+
+  .bracket-column:last-child .match-wrapper::after {
+    display: none;
+  }
+
+  /* Custom Scrollbar */
+  .bracket-wrapper::-webkit-scrollbar {
+    height: 4px;
+  }
+  .bracket-wrapper::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  .bracket-wrapper::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.1);
   }
 </style>

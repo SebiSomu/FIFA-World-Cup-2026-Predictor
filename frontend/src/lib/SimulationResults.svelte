@@ -1,9 +1,11 @@
 <script lang="ts">
   import { tick } from "svelte";
+  import { fade, fly } from "svelte/transition";
   import "../app.css";
   import GroupTable from "./GroupTable.svelte";
   import ThirdPlacedTable from "./ThirdPlacedTable.svelte";
   import KnockoutBracket from "./KnockoutBracket.svelte";
+  import Footer from "./Footer.svelte";
   import { getFlagUrl } from "./flags";
 
   interface Match {
@@ -41,10 +43,10 @@
     runner_up: string;
     third_place: string;
     total_matches: number;
-    simulation_type: 'modern' | 'all_time';
+    simulation_type: "modern" | "all_time";
   }
 
-  type SimulationType = 'modern' | 'all_time';
+  type SimulationType = "modern" | "all_time";
 
   interface SimulationData {
     status: string;
@@ -53,14 +55,15 @@
     standings: Record<string, TeamRecord[]>;
   }
 
-  let results: SimulationData | null = null;
-  let loading = false;
-  let error: string | null = null;
-  let errorDetail: string | null = null;
-  let selectedType: SimulationType = 'modern';
+  let results = $state<SimulationData | null>(null);
+  let loading = $state(false);
+  let error = $state<string | null>(null);
+  let errorDetail = $state<string | null>(null);
+  let selectedType = $state<SimulationType>("modern");
 
-  // Progression state
-  let currentStageIndex = -1;
+  let currentStageIndex = $state(-1);
+  let revealingCurrentKnockout = $state(false);
+
   const stages = [
     "Group Stage",
     "Third-Placed Teams",
@@ -73,7 +76,14 @@
     "Champion",
   ];
 
-  $: visibleStages = stages.slice(2, currentStageIndex + 1);
+  let visibleStages = $derived(stages.slice(2, currentStageIndex + 1));
+  let showResultsFor = $derived(
+    revealingCurrentKnockout
+      ? stages[currentStageIndex]
+      : currentStageIndex > 2
+        ? stages[currentStageIndex - 1]
+        : null,
+  );
 
   const API_URL = "http://localhost:8000/api";
 
@@ -82,10 +92,13 @@
     error = null;
     errorDetail = null;
     currentStageIndex = -1;
+    revealingCurrentKnockout = false;
     results = null;
 
     try {
-      const response = await fetch(`${API_URL}/results/full/?type=${selectedType}`);
+      const response = await fetch(
+        `${API_URL}/results/full/?type=${selectedType}`,
+      );
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
@@ -102,7 +115,6 @@
 
       const data: SimulationData = await response.json();
 
-      // Inject group name into team records for third-placed calculation
       for (const [groupName, teams] of Object.entries(data.standings)) {
         for (const team of teams) {
           team.group = groupName;
@@ -110,7 +122,7 @@
       }
 
       results = data;
-      currentStageIndex = 0; // Show group stage immediately after loading
+      currentStageIndex = 0;
     } catch (e) {
       error = e instanceof Error ? e.message : "Unknown error";
       errorDetail =
@@ -123,10 +135,18 @@
 
   async function nextStage() {
     if (currentStageIndex < stages.length - 1) {
-      currentStageIndex++;
+      const isKnockout = currentStageIndex >= 2 && currentStageIndex <= 7;
+
+      if (isKnockout && !revealingCurrentKnockout) {
+        revealingCurrentKnockout = true;
+      } else {
+        currentStageIndex++;
+        revealingCurrentKnockout = currentStageIndex < 2; // Groups and Third-placed don't have reveal step
+      }
 
       await tick();
 
+      // Scroll logic
       if (currentStageIndex === 6) {
         const el = document.querySelector(".third-place-section");
         if (el) el.scrollIntoView({ behavior: "smooth", block: "center" });
@@ -137,7 +157,7 @@
         const el = document.querySelector(".champion-card-container");
         if (el) el.scrollIntoView({ behavior: "smooth", block: "center" });
       } else {
-        window.scrollTo({ top: 0, behavior: "smooth" });
+        // window.scrollTo({ top: 0, behavior: "smooth" });
       }
     }
   }
@@ -147,63 +167,77 @@
     let thirds: TeamRecord[] = [];
     for (const teams of Object.values(results.standings)) {
       if (teams.length >= 3) {
-        thirds.push(teams[2]); // 0-indexed, so 2 is 3rd place
+        thirds.push(teams[2]);
       }
     }
     return thirds;
   }
 
-  // Label formatting for the button
   function getStageLabel(stageName: string) {
     if (stageName === "Quarter-Final") return "Quarter-finals";
     if (stageName === "Semi-Final") return "Semi-finals";
     if (stageName === "Third Place") return "Third place final";
     return stageName;
   }
+
+  function getButtonText() {
+    if (currentStageIndex < 0) return "Load Simulation";
+
+    const isKnockout = currentStageIndex >= 2 && currentStageIndex <= 7;
+    if (isKnockout && !revealingCurrentKnockout) {
+      return `Reveal ${getStageLabel(stages[currentStageIndex])} Results`;
+    }
+
+    if (currentStageIndex === stages.length - 1) return "Simulation Complete";
+
+    return `Next: ${getStageLabel(stages[currentStageIndex + 1])}`;
+  }
 </script>
 
 <div class="simulation-container">
-  <div class="header">
-    <h2>FIFA World Cup 2026 Predictor</h2>
-      {#if !results && !loading}
+  <div class="header premium-card" in:fade>
+    <div class="title-section">
+      <h2>FIFA World Cup 2026™</h2>
+      <p class="tagline">Road to North America</p>
+    </div>
+
+    {#if !results && !loading}
       <div class="controls-row">
         <div class="simulation-toggle">
-          <span class="toggle-label">Simulation:</span>
+          <span class="toggle-label">Algorithm:</span>
           <div class="toggle-buttons">
             <button
-              class="toggle-btn"
-              class:active={selectedType === 'modern'}
-              on:click={() => selectedType = 'modern'}
+              class={`toggle-btn ${selectedType === "modern" ? "active" : ""}`}
+              onclick={() => (selectedType = "modern")}
             >
               Modern
             </button>
             <button
-              class="toggle-btn"
-              class:active={selectedType === 'all_time'}
-              on:click={() => selectedType = 'all_time'}
+              class={`toggle-btn ${selectedType === "all_time" ? "active" : ""}`}
+              onclick={() => (selectedType = "all_time")}
             >
               All-Time
             </button>
           </div>
         </div>
-        <button class="primary-button" on:click={loadSimulation}>
-          Load Simulation
+        <button class="btn-primary" onclick={loadSimulation}>
+          Start Simulation
         </button>
       </div>
     {/if}
 
     {#if results && currentStageIndex < stages.length - 1}
       <div class="controls">
-        <button class="next-button" on:click={nextStage}>
-          Next Stage ({getStageLabel(stages[currentStageIndex + 1])})
+        <button class="btn-primary next-button" onclick={nextStage}>
+          {getButtonText()}
         </button>
       </div>
     {/if}
   </div>
 
   {#if error}
-    <div class="error">
-      <strong>Error:</strong>
+    <div class="error premium-card" in:fly={{ y: 20 }}>
+      <strong>Simulation Error</strong>
       <pre>{error}</pre>
       {#if errorDetail}
         <p class="error-hint">{errorDetail}</p>
@@ -212,302 +246,347 @@
   {/if}
 
   {#if loading}
-    <div class="loading">
-      <p>Loading simulation data from database...</p>
+    <div class="loading" in:fade>
       <div class="spinner"></div>
+      <p>Processing millions of permutations...</p>
     </div>
   {/if}
 
   {#if results && currentStageIndex >= 0}
-    <div class="simulation-badge" class:modern={results.simulation.simulation_type === 'modern'} class:all-time={results.simulation.simulation_type === 'all_time'}>
-      {results.simulation.simulation_type === 'modern' ? 'Modern (recency weighted)' : 'All-Time (equal weights for all years)'}
-    </div>
-    <div class="results">
-      <!-- Group Stage View -->
-      {#if currentStageIndex === 0}
-        <div class="stage-section fade-in">
-          <h3>Group Standings</h3>
-          <div class="groups-grid">
-            {#each Object.entries(results.standings) as [group, teams]}
-              <GroupTable groupName={group} {teams} />
-            {/each}
-          </div>
+    <div class="main-content" in:fade>
+      <div class="info-bar">
+        <div
+          class={`simulation-badge ${results.simulation.simulation_type === "modern" ? "modern" : "all-time"}`}
+        >
+          {results.simulation.simulation_type === "modern"
+            ? "Modern Methodology"
+            : "All-Time Historical Data"}
         </div>
-      {/if}
-
-      <!-- Third Placed Teams View -->
-      {#if currentStageIndex === 1}
-        <div class="stage-section fade-in">
-          <ThirdPlacedTable teams={getThirdPlacedTeams()} />
+        <div class="current-stage-badge">
+          Current: {getStageLabel(stages[currentStageIndex])}
         </div>
-      {/if}
+      </div>
 
-      <!-- Knockout Stage Bracket View -->
-      {#if currentStageIndex >= 2 && currentStageIndex <= 7}
-        <div class="stage-section fade-in">
-          <h3>Knockout Stage</h3>
-          <KnockoutBracket
-            matchesByStage={results.matches_by_stage}
-            {visibleStages}
-          />
-        </div>
-      {/if}
-
-      <!-- Champion View -->
-      {#if currentStageIndex === 8}
-        <div class="stage-section fade-in final-results">
-          <h3>World Cup Champion</h3>
-          <div class="champion-card-container">
-            <div class="champion-card">
-              <span class="place-label">Winner</span>
-              {#if getFlagUrl(results.simulation.champion)}
-                <img
-                  src={getFlagUrl(results.simulation.champion)}
-                  class="champion-flag"
-                  alt={results.simulation.champion}
-                />
-              {/if}
-              <span class="team-name">{results.simulation.champion}</span>
+      <div class="results">
+        <!-- Group Stage View -->
+        {#if currentStageIndex === 0}
+          <div class="stage-section" in:fly={{ y: 30, duration: 800 }}>
+            <h3 class="section-title">Group Standings</h3>
+            <div class="groups-grid">
+              {#each Object.entries(results.standings) as [group, teams]}
+                <GroupTable groupName={group} {teams} />
+              {/each}
             </div>
           </div>
-        </div>
-      {/if}
+        {/if}
+
+        <!-- Third Placed Teams View -->
+        {#if currentStageIndex === 1}
+          <div class="stage-section" in:fly={{ y: 30, duration: 800 }}>
+            <ThirdPlacedTable teams={getThirdPlacedTeams()} />
+          </div>
+        {/if}
+
+        <!-- Knockout Stage Bracket View -->
+        {#if currentStageIndex >= 2 && currentStageIndex <= 7}
+          <div class="stage-section" in:fly={{ y: 30, duration: 800 }}>
+            <h3 class="section-title">Final Tournament Bracket</h3>
+            <KnockoutBracket
+              matchesByStage={results.matches_by_stage}
+              {visibleStages}
+              {showResultsFor}
+            />
+          </div>
+        {/if}
+
+        <!-- Champion View -->
+        {#if currentStageIndex === 8}
+          <div class="stage-section final-results" in:fade={{ duration: 1000 }}>
+            <h3 class="section-title">World Cup Champion</h3>
+            <div class="champion-card-container">
+              <div class="champion-card">
+                <span class="place-label">World Champion 2026</span>
+                {#if getFlagUrl(results.simulation.champion)}
+                  <div class="flag-wrapper">
+                    <img
+                      src={getFlagUrl(results.simulation.champion)}
+                      class="champion-flag"
+                      alt={results.simulation.champion}
+                    />
+                  </div>
+                {/if}
+                <span class="team-name">{results.simulation.champion}</span>
+                <div class="footer-msg">UNITED BY 26</div>
+              </div>
+            </div>
+          </div>
+        {/if}
+      </div>
     </div>
   {/if}
+
+  <Footer />
 </div>
 
 <style>
+  .simulation-container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 2rem;
+  }
+
   .header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 2rem;
-    padding-bottom: 1rem;
-    border-bottom: 2px solid #ecf0f1;
+    margin-bottom: 4rem;
     flex-wrap: wrap;
-    gap: 1rem;
+    gap: 2rem;
+    padding: 2rem 3rem;
+    background: rgba(255, 255, 255, 0.02);
+    border-radius: 4px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
   }
 
-  h2 {
+  .title-section h2 {
     margin: 0;
-    color: #2c3e50;
-    font-size: 1.8rem;
+    font-size: 2.5rem;
+    font-weight: 900;
+    letter-spacing: -1px;
+    color: #fff;
+    text-transform: uppercase;
   }
 
-  .primary-button,
-  .next-button {
-    padding: 0.75rem 1.5rem;
-    border: none;
-    border-radius: 8px;
-    font-weight: 600;
-    font-size: 1rem;
-    cursor: pointer;
-    transition: all 0.2s;
-    background-color: #3498db;
-    color: white;
-    box-shadow: 0 4px 6px rgba(52, 152, 219, 0.2);
-  }
-
-  .primary-button:hover,
-  .next-button:hover {
-    background-color: #2980b9;
-    transform: translateY(-2px);
-    box-shadow: 0 6px 8px rgba(52, 152, 219, 0.3);
-  }
-
-  .next-button {
-    background-color: #2ecc71;
-    box-shadow: 0 4px 6px rgba(46, 204, 113, 0.2);
-  }
-
-  .next-button:hover {
-    background-color: #27ae60;
-    box-shadow: 0 6px 8px rgba(46, 204, 113, 0.3);
-  }
-
-  .controls {
-    display: flex;
-    gap: 1rem;
+  .tagline {
+    margin: 0;
+    font-size: 0.8rem;
+    color: var(--color-accent-blue);
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    font-weight: 800;
   }
 
   .controls-row {
     display: flex;
     align-items: center;
-    gap: 1rem;
-    flex-wrap: wrap;
+    gap: 3rem;
   }
 
   .simulation-toggle {
     display: flex;
     align-items: center;
-    gap: 0.5rem;
+    gap: 1.5rem;
   }
 
   .toggle-label {
-    font-size: 0.9rem;
-    color: #666;
-    font-weight: 500;
+    font-size: 0.8rem;
+    color: var(--color-text-muted);
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 1px;
   }
 
   .toggle-buttons {
     display: flex;
-    background: #ecf0f1;
-    border-radius: 8px;
-    padding: 3px;
-    gap: 3px;
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: 4px;
+    padding: 4px;
+    gap: 4px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
   }
 
   .toggle-btn {
-    padding: 0.5rem 1rem;
+    padding: 0.6rem 1.5rem;
     border: none;
-    border-radius: 6px;
+    border-radius: 2px;
     background: transparent;
     color: #666;
-    font-size: 0.9rem;
-    font-weight: 500;
+    font-size: 0.75rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 1px;
     cursor: pointer;
-    transition: all 0.2s;
-  }
-
-  .toggle-btn:hover {
-    color: #333;
+    transition: var(--transition-smooth);
   }
 
   .toggle-btn.active {
-    background: white;
-    color: #2c3e50;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    background: #fff;
+    color: #000;
+  }
+
+  .info-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 3rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
   }
 
   .simulation-badge {
-    display: inline-block;
-    padding: 0.5rem 1rem;
-    border-radius: 20px;
-    font-size: 0.85rem;
-    font-weight: 500;
-    margin-bottom: 1.5rem;
-    text-align: center;
+    padding: 0.5rem 1.2rem;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.1);
   }
 
   .simulation-badge.modern {
-    background: linear-gradient(135deg, #3498db, #2980b9);
-    color: white;
+    border-color: var(--color-accent-blue);
+    color: var(--color-accent-blue);
+    box-shadow: 0 0 10px rgba(0, 102, 255, 0.2);
   }
 
   .simulation-badge.all-time {
-    background: linear-gradient(135deg, #9b59b6, #8e44ad);
-    color: white;
+    border-color: var(--color-accent-gold);
+    color: var(--color-accent-gold);
+    box-shadow: 0 0 10px rgba(255, 215, 0, 0.2);
   }
 
-  .stage-section {
+  .current-stage-badge {
+    font-size: 0.8rem;
+    font-weight: 900;
+    color: #fff;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    opacity: 0.8;
+  }
+
+  .section-title {
+    font-size: 2rem;
+    font-weight: 900;
     margin-bottom: 3rem;
-  }
-
-  h3 {
-    color: #2c3e50;
-    font-size: 1.5rem;
-    margin-bottom: 1.5rem;
+    text-align: left;
+    color: #fff;
+    text-transform: uppercase;
+    letter-spacing: -0.5px;
   }
 
   .groups-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(500px, 1fr));
-    gap: 1.5rem;
+    grid-template-columns: repeat(auto-fill, minmax(450px, 1fr));
+    gap: 2rem;
   }
 
-  .fade-in {
-    animation: fadeInStage 0.6s ease-out forwards;
-  }
-
-  @keyframes fadeInStage {
-    from {
-      opacity: 0;
-      transform: translateY(20px);
-    }
-    to {
-      opacity: 1;
-      transform: translateY(0);
-    }
-  }
-
-  .spinner {
-    width: 40px;
-    height: 40px;
-    border: 4px solid rgba(52, 152, 219, 0.2);
-    border-top: 4px solid #3498db;
-    border-radius: 50%;
-    animation: spin 1s linear infinite;
-    margin: 1rem auto;
-  }
-
-  @keyframes spin {
-    0% {
-      transform: rotate(0deg);
-    }
-    100% {
-      transform: rotate(360deg);
-    }
-  }
-
-  /* Champion Card Styles */
-  .champion-card-container {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    margin-top: 2rem;
-  }
-
-  .champion-card {
+  .loading {
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    padding: 3rem 5rem;
-    border-radius: 16px;
-    background: linear-gradient(135deg, #f1c40f, #f39c12);
-    color: white;
-    box-shadow: 0 10px 20px rgba(243, 156, 18, 0.3);
-    animation: pulse 2s infinite;
+    padding: 5rem;
+    color: var(--color-text-muted);
   }
 
-  @keyframes pulse {
-    0% {
-      transform: scale(1);
-      box-shadow: 0 10px 20px rgba(243, 156, 18, 0.3);
+  .spinner {
+    width: 50px;
+    height: 50px;
+    border: 3px solid rgba(52, 152, 219, 0.1);
+    border-top: 3px solid var(--color-accent-blue);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin-bottom: 1.5rem;
+  }
+
+  @keyframes spin {
+    to {
+      transform: rotate(360deg);
     }
-    50% {
-      transform: scale(1.02);
-      box-shadow: 0 15px 30px rgba(243, 156, 18, 0.4);
-    }
-    100% {
-      transform: scale(1);
-      box-shadow: 0 10px 20px rgba(243, 156, 18, 0.3);
-    }
+  }
+
+  .champion-card {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 5rem;
+    border-radius: 4px;
+    background: #000;
+    border: 2px solid var(--color-accent-gold);
+    box-shadow: 0 0 30px rgba(255, 215, 0, 0.2);
+    overflow: hidden;
+  }
+
+  .flag-wrapper {
+    margin-bottom: 2.5rem;
+    padding: 8px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 4px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
   }
 
   .champion-flag {
-    width: 80px;
-    height: 50px;
+    width: 150px;
+    height: 94px;
     object-fit: cover;
-    border-radius: 8px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
-    margin-bottom: 1rem;
+    border-radius: 2px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.8);
   }
 
   .place-label {
     font-size: 1.2rem;
     text-transform: uppercase;
-    letter-spacing: 2px;
+    letter-spacing: 6px;
+    font-weight: 900;
+    margin-bottom: 2rem;
+    color: var(--color-accent-gold);
     opacity: 0.9;
-    margin-bottom: 1rem;
-    font-weight: 600;
   }
 
   .team-name {
-    font-size: 3rem;
-    font-weight: 800;
-    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+    font-size: 5rem;
+    font-weight: 900;
     text-align: center;
+    letter-spacing: -2px;
+    color: #fff;
+    text-transform: uppercase;
+  }
+
+  .footer-msg {
+    margin-top: 3rem;
+    font-weight: 900;
+    letter-spacing: 4px;
+    opacity: 0.4;
+    font-size: 0.8rem;
+  }
+
+  .simulation-footer {
+    margin-top: 8rem;
+    padding: 4rem 2rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+    background: #050505;
+  }
+
+  .footer-content {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2rem;
+  }
+
+  .footer-brand {
+    font-weight: 800;
+    font-size: 1.1rem;
+    letter-spacing: 1px;
+    opacity: 0.8;
+  }
+
+  .footer-links {
+    display: flex;
+    gap: 3rem;
+    font-size: 0.9rem;
+    color: var(--color-text-muted);
+    font-weight: 500;
+  }
+
+  .footer-copy {
+    font-size: 0.8rem;
+    color: var(--color-text-muted);
+    opacity: 0.5;
   }
 
   @media (max-width: 768px) {
@@ -515,10 +594,17 @@
       grid-template-columns: 1fr;
     }
     .champion-card {
-      padding: 2rem 3rem;
+      padding: 3rem 2rem;
     }
     .team-name {
-      font-size: 2rem;
+      font-size: 2.5rem;
+    }
+    .header {
+      flex-direction: column;
+      align-items: stretch;
+    }
+    .controls-row {
+      flex-direction: column;
     }
   }
 </style>
